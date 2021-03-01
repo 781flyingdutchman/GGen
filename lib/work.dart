@@ -8,6 +8,8 @@ import 'package:shaker/objects.dart';
 /// Extends this class and override [create]
 class Work {
   final gCode = <String>[];
+  Point toolPoint = Point(0, 0);
+  double toolZ = 0;
 
   /// Creates the work
   void create() {
@@ -19,11 +21,21 @@ class Work {
     if (x == null && y == null && z == null) {
       throw StateError('In move, one of x|y|z must be given');
     }
-    var line = '$g ';
-    if (x != null) line = lineAddArgAndValue(line, 'X', x);
-    if (y != null) line = lineAddArgAndValue(line, 'Y', y);
-    if (z != null) line = lineAddArgAndValue(line, 'Z', z);
+    var line = '$g';
+    if (x != null) {
+      line = lineAddArgAndValue(line, 'X', x);
+      toolPoint = Point(x, toolPoint.y);
+    };
+    if (y != null) {
+      line = lineAddArgAndValue(line, 'Y', y);
+      toolPoint = Point(toolPoint.x, y);
+    };
+    if (z != null) {
+      line = lineAddArgAndValue(line, 'Z', z);
+      toolZ = z;
+    };
     if (f != null) line = lineAddArgAndValue(line, 'F', f);
+    
     return line;
   }
 
@@ -45,13 +57,13 @@ class Work {
     return linearMove(x: p.x, y: p.y, z: z, f: f);
   }
 
-  String moveToSafeHeight() => 'G0 Z${Machine().safeHeight}';
+  String moveToSafeHeight() => rapidMove(z: Machine().safeHeight);
 
-  String moveToClearanceHeight() => 'G0 Z${Machine().clearanceHeight}';
+  String moveToClearanceHeight() => rapidMove(z: Machine().clearanceHeight);
 
   String lineAddArgAndValue(String line, String argument, double value) {
     var valueAsString = value.toStringAsFixed(4);
-    return '$line $argument$valueAsString';
+    return '$line $argument$valueAsString'.trim();
   }
 
   String lineWithComment(String line, String comment) => '$line;  $comment';
@@ -179,7 +191,7 @@ class ShakerWork extends Work {
       if (horTabs == null) {
         points.add(cutRect.bl);
       } else {
-        horTabs.forEach((xValue) {
+        horTabs.reversed.forEach((xValue) {
           points.add(Point(xValue, cutRect.bl.y));
         });
         points.add(cutRect.bl);
@@ -191,15 +203,13 @@ class ShakerWork extends Work {
       rapidMoveToPoint(cutRect.bl),
       moveToClearanceHeight()
     ]);
-    var currentZ = machine.clearanceHeight;
-    while (currentZ > depth) {
+    while (toolZ > depth) {
       var targetZ = max(depth,
-          min(currentZ - machine.maxCutStepDepth, -machine.maxCutStepDepth));
+          min(toolZ - machine.maxCutStepDepth, -machine.maxCutStepDepth));
       gCode.add(linearMoveToPoint(cutRect.bl, targetZ, machine.verticalFeedDown));
       var points = (tabs.isNotEmpty && targetZ < panel.tabTopDepth)
           ? movePoints['tabs']!
           : movePoints['normal']!;
-      var currentPoint = cutRect.bl;
       points.forEach((p) {
         if (cutRect.hasPoint(p)) {
           // corner of rectangle, so move there
@@ -209,21 +219,21 @@ class ShakerWork extends Work {
         else {
           // tab point
           Point startOfTab, endOfTab;
-          if (p.isSameVerticalAs(currentPoint)) {
+          if (p.isSameVerticalAs(toolPoint)) {
             // vertically oriented tab
-            var tabIsAbove = p.y > currentPoint.y;
-            startOfTab = Point(currentPoint.x,
+            var tabIsAbove = p.y > toolPoint.y;
+            startOfTab = Point(toolPoint.x,
                 tabIsAbove ?
                 p.y - panel.tabWidth / 2
                     : p.y + panel.tabWidth / 2);
-            endOfTab = Point(currentPoint.x,
+            endOfTab = Point(toolPoint.x,
                 tabIsAbove ?
                 p.y + panel.tabWidth / 2
                     : p.y - panel.tabWidth / 2);
           }
           else {
             // horizontally oriented tab
-            var tabIsToRight = p.x > currentPoint.x;
+            var tabIsToRight = p.x > toolPoint.x;
             startOfTab = Point(
                 tabIsToRight ?
                 p.x - panel.tabWidth / 2
@@ -246,7 +256,6 @@ class ShakerWork extends Work {
               ]);
         }
       });
-      currentZ = targetZ;
     }
     gCode.add(lineWithComment(moveToClearanceHeight(), 'Rectangle cut done'));
   }
