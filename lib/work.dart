@@ -218,30 +218,32 @@ class ShakerWork extends Work {
         }
         else {
           // tab point
+          // offset is distance from tab center where tool must stop
+          final tabToolOffset = panel.tabWidth / 2 + machine.toolRadius;
           Point startOfTab, endOfTab;
           if (p.isSameVerticalAs(toolPoint)) {
             // vertically oriented tab
             var tabIsAbove = p.y > toolPoint.y;
             startOfTab = Point(toolPoint.x,
                 tabIsAbove ?
-                p.y - panel.tabWidth / 2
-                    : p.y + panel.tabWidth / 2);
+                p.y - tabToolOffset
+                    : p.y + tabToolOffset);
             endOfTab = Point(toolPoint.x,
                 tabIsAbove ?
-                p.y + panel.tabWidth / 2
-                    : p.y - panel.tabWidth / 2);
+                p.y + tabToolOffset
+                    : p.y - tabToolOffset);
           }
           else {
             // horizontally oriented tab
             var tabIsToRight = p.x > toolPoint.x;
             startOfTab = Point(
                 tabIsToRight ?
-                p.x - panel.tabWidth / 2
-                    : p.x + panel.tabWidth / 2, p.y);
+                p.x - tabToolOffset
+                    : p.x + tabToolOffset, p.y);
             endOfTab = Point(
                 tabIsToRight ?
-                p.x + panel.tabWidth / 2
-                    : p.x - panel.tabWidth / 2, p.y);
+                p.x + tabToolOffset
+                    : p.x - tabToolOffset, p.y);
           }
           // create the tab
           gCode.addAll(
