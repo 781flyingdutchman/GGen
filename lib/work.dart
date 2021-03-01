@@ -25,17 +25,20 @@ class Work {
     if (x != null) {
       line = lineAddArgAndValue(line, 'X', x);
       toolPoint = Point(x, toolPoint.y);
-    };
+    }
+    ;
     if (y != null) {
       line = lineAddArgAndValue(line, 'Y', y);
       toolPoint = Point(toolPoint.x, y);
-    };
+    }
+    ;
     if (z != null) {
       line = lineAddArgAndValue(line, 'Z', z);
       toolZ = z;
-    };
+    }
+    ;
     if (f != null) line = lineAddArgAndValue(line, 'F', f);
-    
+
     return line;
   }
 
@@ -137,9 +140,9 @@ class ShakerWork extends Work {
 
   void addRectCut(Rect outline,
       {double? cutDepth,
-        insideCut = false,
-        bool makeTabs = false,
-        String? description}) {
+      insideCut = false,
+      bool makeTabs = false,
+      String? description}) {
     var machine = Machine();
     var panel = Panel();
     var depth = cutDepth ?? panel.cutThroughDepth;
@@ -206,7 +209,8 @@ class ShakerWork extends Work {
     while (toolZ > depth) {
       var targetZ = max(depth,
           min(toolZ - machine.maxCutStepDepth, -machine.maxCutStepDepth));
-      gCode.add(linearMoveToPoint(cutRect.bl, targetZ, machine.verticalFeedDown));
+      gCode.add(
+          linearMoveToPoint(cutRect.bl, targetZ, machine.verticalFeedDown));
       var points = (tabs.isNotEmpty && targetZ < panel.tabTopDepth)
           ? movePoints['tabs']!
           : movePoints['normal']!;
@@ -215,8 +219,7 @@ class ShakerWork extends Work {
           // corner of rectangle, so move there
           gCode.add(
               linearMoveToPoint(p, targetZ, machine.horizontalFeedCutting));
-        }
-        else {
+        } else {
           // tab point
           // offset is distance from tab center where tool must stop
           final tabToolOffset = panel.tabWidth / 2 + machine.toolRadius;
@@ -225,40 +228,46 @@ class ShakerWork extends Work {
             // vertically oriented tab
             var tabIsAbove = p.y > toolPoint.y;
             startOfTab = Point(toolPoint.x,
-                tabIsAbove ?
-                p.y - tabToolOffset
-                    : p.y + tabToolOffset);
+                tabIsAbove ? p.y - tabToolOffset : p.y + tabToolOffset);
             endOfTab = Point(toolPoint.x,
-                tabIsAbove ?
-                p.y + tabToolOffset
-                    : p.y - tabToolOffset);
-          }
-          else {
+                tabIsAbove ? p.y + tabToolOffset : p.y - tabToolOffset);
+          } else {
             // horizontally oriented tab
             var tabIsToRight = p.x > toolPoint.x;
             startOfTab = Point(
-                tabIsToRight ?
-                p.x - tabToolOffset
-                    : p.x + tabToolOffset, p.y);
+                tabIsToRight ? p.x - tabToolOffset : p.x + tabToolOffset, p.y);
             endOfTab = Point(
-                tabIsToRight ?
-                p.x + tabToolOffset
-                    : p.x - tabToolOffset, p.y);
+                tabIsToRight ? p.x + tabToolOffset : p.x - tabToolOffset, p.y);
           }
           // create the tab
-          gCode.addAll(
-              [
+          gCode.addAll([
+            linearMoveToPoint(
+                startOfTab, targetZ, machine.horizontalFeedCutting),
+            lineWithComment(
                 linearMoveToPoint(
-                    startOfTab, targetZ, machine.horizontalFeedCutting),
-                lineWithComment(linearMoveToPoint(
-                    startOfTab, panel.tabTopDepth, machine.verticalFeedUp), 'tab'),
-                linearMoveToPoint(
-                    endOfTab, panel.tabTopDepth, machine.horizontalFeedCutting),
-                linearMoveToPoint(endOfTab, targetZ, machine.verticalFeedDown)
-              ]);
+                    startOfTab, panel.tabTopDepth, machine.verticalFeedUp),
+                'tab'),
+            linearMoveToPoint(
+                endOfTab, panel.tabTopDepth, machine.horizontalFeedCutting),
+            linearMoveToPoint(endOfTab, targetZ, machine.verticalFeedDown)
+          ]);
         }
       });
     }
     gCode.add(lineWithComment(moveToClearanceHeight(), 'Rectangle cut done'));
+  }
+
+  void addMillCut(Rect outline, double cutDepth, {String? description}) {
+    // calculate the end points
+    final machine = Machine();
+    var points = <Point>[];
+    final step = machine.toolRadius;
+    // calculate intersection points
+    gCode.addAll([
+      moveToSafeHeight(),
+      rapidMoveToPoint(outline.bl),
+      moveToClearanceHeight()
+    ]);
+
   }
 }
