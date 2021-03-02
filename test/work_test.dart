@@ -1,6 +1,3 @@
-import 'dart:io';
-
-import 'package:shaker/config.dart';
 import 'package:shaker/conversion.dart';
 import 'package:shaker/objects.dart';
 import 'package:shaker/work.dart';
