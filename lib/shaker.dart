@@ -11,7 +11,7 @@ class ShakerPanel {
   double width = 300;
   double height = 150;
   double styleWidth = 2.inch;
-  double millDepth = -4;
+  double pocketDepth = -4;
   Point? handleMidpoint; // if null, no handle
   bool? handleOrientationLandscape; // if null, single hole
   double handleSize = 0;
@@ -46,8 +46,8 @@ class ShakerWork extends Work {
     if (handleMidpoint != null) {
       addHandleHoles(handleMidpoint, landscape: panel.handleOrientationLandscape, size: panel.handleSize);
     }
-    addRectCut(innerRect, insideCut: true, cutDepth: panel.millDepth, description: 'Inside edge trim');
-    addRectMill(millRect, millDepth: panel.millDepth);
+    addRectCut(innerRect, insideCut: true, cutDepth: panel.pocketDepth, description: 'Inside edge trim');
+    addRectMill(millRect, millDepth: panel.pocketDepth);
     addRectCut(panelRect, makeTabs: true, description: 'Panel outline');
   }
 
