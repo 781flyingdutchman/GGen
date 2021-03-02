@@ -45,12 +45,9 @@ class ShakerWork extends Work {
     final handleMidpoint = panel.handleMidpoint;
     if (handleMidpoint != null) {
       addHandleHoles(handleMidpoint, landscape: panel.handleOrientationLandscape, size: panel.handleSize);
-      addSpace();
     }
     addRectCut(innerRect, insideCut: true, cutDepth: panel.millDepth, description: 'Inside edge trim');
-    addSpace();
     addRectMill(millRect, millDepth: panel.millDepth);
-    addSpace();
     addRectCut(panelRect, makeTabs: true, description: 'Panel outline');
   }
 
