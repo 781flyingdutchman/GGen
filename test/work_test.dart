@@ -1,3 +1,5 @@
+import 'package:shaker/config.dart';
+import 'package:shaker/conversion.dart';
 import 'package:shaker/objects.dart';
 import 'package:shaker/work.dart';
 import 'package:test/test.dart';
@@ -57,10 +59,52 @@ void main() {
     expect(w.gCode.toString(), equals('[(Rectangle cut), G0 Z5.0000, G0 X3.1750 Y3.1750, G0 Z1.0000, G1 X3.1750 Y3.1750 Z-5.0000 F60.0000, G1 X3.1750 Y96.8250 Z-5.0000 F500.0000, G1 X96.8250 Y96.8250 Z-5.0000 F500.0000, G1 X96.8250 Y3.1750 Z-5.0000 F500.0000, G1 X3.1750 Y3.1750 Z-5.0000 F500.0000, G1 X3.1750 Y3.1750 Z-10.0000 F60.0000, G1 X3.1750 Y96.8250 Z-10.0000 F500.0000, G1 X96.8250 Y96.8250 Z-10.0000 F500.0000, G1 X96.8250 Y3.1750 Z-10.0000 F500.0000, G1 X3.1750 Y3.1750 Z-10.0000 F500.0000, G1 X3.1750 Y3.1750 Z-15.0000 F60.0000, G1 X3.1750 Y96.8250 Z-15.0000 F500.0000, G1 X96.8250 Y96.8250 Z-15.0000 F500.0000, G1 X96.8250 Y3.1750 Z-15.0000 F500.0000, G1 X3.1750 Y3.1750 Z-15.0000 F500.0000, G1 X3.1750 Y3.1750 Z-20.0000 F60.0000, G1 X3.1750 Y96.8250 Z-20.0000 F500.0000, G1 X96.8250 Y96.8250 Z-20.0000 F500.0000, G1 X96.8250 Y3.1750 Z-20.0000 F500.0000, G1 X3.1750 Y3.1750 Z-20.0000 F500.0000, G1 X3.1750 Y3.1750 Z-21.5000 F60.0000, G1 X3.1750 Y96.8250 Z-21.5000 F500.0000, G1 X96.8250 Y96.8250 Z-21.5000 F500.0000, G1 X96.8250 Y3.1750 Z-21.5000 F500.0000, G1 X3.1750 Y3.1750 Z-21.5000 F500.0000, G0 Z1.0000;  Rectangle cut done]'));
   });
   
-  test('Mill cut - landscape', () {
+  test('addRectMill - landscape', () {
     var w = Work();
     var rect = Rect(Point(0, 0), Point(200, 100));
-    w.addMillCut(rect, -4);
+    w.addRectMill(rect, -4);
+    var input = w.gCode[2];
+    expect(GParser().valueOf('X', input), equals(Machine().toolRadius));
+    expect(GParser().valueOf('Y', input), equals(Machine().toolRadius));
+    input = w.gCode[w.gCode.length - 4];
+    expect(GParser().valueOf('X', input), equals(200 - Machine().toolRadius));
+    expect(GParser().valueOf('Y', input), equals(100 - Machine().toolRadius));
+    input = w.gCode[w.gCode.length - 2];
+    expect(GParser().valueOf('X', input), equals(Machine().toolRadius));
+    expect(GParser().valueOf('Y', input), equals(100 - Machine().toolRadius));
+  });
+
+  test('addRectMill - portrait', () {
+    var w = Work();
+    var rect = Rect(Point(0, 0), Point(100, 200));
+    w.addRectMill(rect, -4);
     print(w.gCode.join('\n'));
+    var input = w.gCode[2];
+    expect(GParser().valueOf('X', input), equals(Machine().toolRadius));
+    expect(GParser().valueOf('Y', input), equals(Machine().toolRadius));
+    input = w.gCode[w.gCode.length - 4];
+    expect(GParser().valueOf('X', input), equals(100 - Machine().toolRadius));
+    expect(GParser().valueOf('Y', input), equals(200 - Machine().toolRadius));
+    input = w.gCode[w.gCode.length - 2];
+    expect(GParser().valueOf('X', input), equals(100 - Machine().toolRadius));
+    expect(GParser().valueOf('Y', input), equals(Machine().toolRadius));
+  });
+
+  test('addRectMill - deep', () {
+    var w = Work();
+    var rect = Rect(Point(0, 0), Point(100, 200));
+    w.addRectMill(rect, -11);
+    // expect 3 'return to bottom left' moves, one for each cut
+    expect(w.gCode.where((element) => element == 'G0 X3.1750 Y3.1750').length, equals(3));
+    var zValues = <double>{};
+    w.gCode.forEach((line) {
+      if (line.contains('Z')) {
+        zValues.add(GParser().valueOf('Z', line));
+      }
+    });
+    var sortedZs = zValues.toList()..sort();
+    expect(sortedZs, equals([-11.0, -10.0, -5.0, 1.0, 5.0]));
   });
 }
+
+

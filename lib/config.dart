@@ -2,6 +2,12 @@
 /// Configuration parameters for the machine
 class Machine {
   static final Machine _singleton = Machine._internal();
+
+  factory Machine() {
+    return _singleton;
+  }
+
+  Machine._internal();
   
   // configuration variables for machine
 
@@ -12,6 +18,7 @@ class Machine {
   // tool
   double toolDiameter = 6.35;
   double maxCutStepDepth = 5;
+  double get toolRadius => toolDiameter / 2;
 
   // feeds
   double horizontalFeedCutting = 500; // in mm/min
@@ -32,13 +39,7 @@ class Machine {
   double tabSpacing = 300;
   double get tabTopDepth => -materialThickness + tabHeight;
 
-  factory Machine() {
-    return _singleton;
-  }
 
-  Machine._internal();
-
-  double get toolRadius => toolDiameter / 2;
 }
 
 

@@ -202,7 +202,7 @@ class Work {
   ///
   /// [outline] rectangular outline of the cut
   /// [cutDepth] in mm (negative) of the milled surface
-  void addMillCut(Rect outline, double cutDepth, {String? description}) {
+  void addRectMill(Rect outline, double cutDepth, {String? description}) {
     // calculate the end points
     final machine = Machine();
     if (cutDepth > 0) throw StateError('cutDepth must be < 0');
@@ -225,25 +225,40 @@ class Work {
     while (toolZ > cutDepth) {
       var targetZ = max(cutDepth,
           min(toolZ - machine.maxCutStepDepth, -machine.maxCutStepDepth));
-      gCode.add(linearMoveToPoint(points.first, targetZ, machine.verticalFeedDown));
+      gCode.add(
+          linearMoveToPoint(points.first, targetZ, machine.verticalFeedDown));
       var toPath = true; // in 'to' stage (versus 'return' stage) of mill
       points.skip(1).forEach((p) {
         final acrossPoint; // the point across from the current position
         final adjacentPoint; // the point adjacent to the acrossPoint
         if (cutRect.isLandscape) {
-          acrossPoint = Point(toPath ? cutRect.tr.x : cutRect.bl.x, toolPoint.y);
+          acrossPoint =
+              Point(toPath ? cutRect.tr.x : cutRect.bl.x, toolPoint.y);
           adjacentPoint = Point(acrossPoint.x, p.y);
-        }
-        else {
-          acrossPoint = Point(toolPoint.x, toPath ? cutRect.tr.y : cutRect.bl.y);
+        } else {
+          acrossPoint =
+              Point(toolPoint.x, toPath ? cutRect.tr.y : cutRect.bl.y);
           adjacentPoint = Point(p.x, acrossPoint.y);
         }
-        gCode.add(linearMoveToPoint(acrossPoint, targetZ, machine.horizontalFeedMilling));
-        gCode.add(linearMoveToPoint(adjacentPoint, targetZ, machine.horizontalFeedMilling));
+        gCode.add(linearMoveToPoint(
+            acrossPoint, targetZ, machine.horizontalFeedMilling));
+        gCode.add(linearMoveToPoint(
+            adjacentPoint, targetZ, machine.horizontalFeedMilling));
         toPath = !toPath; // reverse direction
       });
+      // if we need to make another mill cut, make sure the tool is back in the
+      // bottom left start position
+      if (toolZ > cutDepth) {
+        final previousToolZ = toolZ;
+        gCode.addAll([
+          moveToClearanceHeight(),
+          rapidMoveToPoint(cutRect.bl),
+          linearMove(z: previousToolZ, f: machine.verticalFeedDown)
+        ]);
+      }
     }
-    gCode.add(lineWithComment(moveToClearanceHeight(), 'Milling operation done'));
+    gCode.add(
+        lineWithComment(moveToClearanceHeight(), 'Milling operation done'));
   }
 
   String lineAddArgAndValue(String line, String argument, double value) {
