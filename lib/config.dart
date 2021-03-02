@@ -8,7 +8,7 @@ class Machine {
   }
 
   Machine._internal();
-  
+
   // configuration variables for machine
 
   // heights
@@ -38,7 +38,6 @@ class Machine {
   double tabWidth = 20;
   double tabSpacing = 300;
   double get tabTopDepth => -materialThickness + tabHeight;
-
 
 }
 

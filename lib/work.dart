@@ -201,11 +201,12 @@ class Work {
   /// Milling will be along the long side of the rectangle
   ///
   /// [outline] rectangular outline of the cut
-  /// [cutDepth] in mm (negative) of the milled surface
-  void addRectMill(Rect outline, double cutDepth, {String? description}) {
+  /// [millDepth] in mm (negative) of the milled surface
+  void addRectMill(Rect outline, {double? millDepth, String? description}) {
     // calculate the end points
     final machine = Machine();
-    if (cutDepth > 0) throw StateError('cutDepth must be < 0');
+    var depth = millDepth ?? machine.cutThroughDepth;
+    if (depth > 0) throw StateError('Depth must be < 0');
     gCode.add(comment(description ?? 'Mill rectangle'));
     final offSet = -machine.toolRadius; // inside cut
     // cutRect is the outline adjusted for tool radius, using offSet
@@ -222,8 +223,8 @@ class Work {
       rapidMoveToPoint(cutRect.bl),
       moveToClearanceHeight()
     ]);
-    while (toolZ > cutDepth) {
-      var targetZ = max(cutDepth,
+    while (toolZ > depth) {
+      var targetZ = max(depth,
           min(toolZ - machine.maxCutStepDepth, -machine.maxCutStepDepth));
       gCode.add(
           linearMoveToPoint(points.first, targetZ, machine.verticalFeedDown));
@@ -248,7 +249,7 @@ class Work {
       });
       // if we need to make another mill cut, make sure the tool is back in the
       // bottom left start position
-      if (toolZ > cutDepth) {
+      if (toolZ > depth) {
         final previousToolZ = toolZ;
         gCode.addAll([
           moveToClearanceHeight(),
@@ -259,6 +260,58 @@ class Work {
     }
     gCode.add(
         lineWithComment(moveToClearanceHeight(), 'Milling operation done'));
+  }
+
+  /// Add holes for a handle
+  ///
+  /// [midPoint] is the midPoint of the handle
+  /// [drillDepth] if omitted will cut through
+  /// [landscape] if given indicates a two-hole handle, and then requires [size]
+  /// [size] is the distance between the holes
+  /// [description] will be added as a comment at the start of the operation
+  void addHandleHoles(Point midPoint,
+      {double? drillDepth,
+      bool? landscape,
+      double? size,
+      String? description}) {
+    final machine = Machine();
+    var depth = drillDepth ?? machine.cutThroughDepth;
+    if (depth > 0) throw StateError('Depth must be < 0');
+    gCode.add(comment(description ?? 'Handle'));
+    if (landscape == null) {
+      // single hole drill
+      gCode.addAll([
+        moveToSafeHeight(),
+        rapidMoveToPoint(midPoint),
+        moveToClearanceHeight(),
+        linearMove(z: depth, f: machine.verticalFeedDown),
+        moveToClearanceHeight()
+      ]);
+    } else {
+      // two-hole drill
+      if (size == null) {
+        throw StateError('Size must be given for two hole handle');
+      }
+      final Point p1, p2;
+      if (landscape) {
+        p1 = Point(midPoint.x - size / 2, midPoint.y);
+        p2 = Point(midPoint.x + size / 2, midPoint.y);
+      }
+      else {
+        p1 = Point(midPoint.x, midPoint.y - size / 2);
+        p2 = Point(midPoint.x , midPoint.y + size / 2);
+      }
+      gCode.addAll([
+        moveToSafeHeight(),
+        rapidMoveToPoint(p1),
+        moveToClearanceHeight(),
+        linearMove(z: depth, f: machine.verticalFeedDown),
+        moveToClearanceHeight(),
+        rapidMoveToPoint(p2),
+        linearMove(z: depth, f: machine.verticalFeedDown),
+        moveToClearanceHeight()
+      ]);
+    }
   }
 
   String lineAddArgAndValue(String line, String argument, double value) {
@@ -298,10 +351,6 @@ class Work {
   ///
   /// If an error is found, throws a StateError, otherwise returns
   void validateConfig() {
-    var panel = Panel();
-    if (panel.width == 0 || panel.height == 0) {
-      throw StateError('Panel width and height must be set');
-    }
     var machine = Machine();
     if (machine.safeHeight < machine.clearanceHeight) {
       throw StateError('SafeHeight must be > ClearanceHeight');
@@ -318,20 +367,3 @@ class Work {
   }
 }
 
-class ShakerWork extends Work {
-  @override
-  void create() {
-    super.create();
-    // assume bottom left of panel is (0, 0)
-    // calculate the rectangles
-    var machine = Machine();
-    var panel = Panel();
-    var panelRect = Rect(Point(0, 0), Point(panel.width, panel.height));
-    var offSet = panel.styleWidth;
-    var innerRect = Rect(Point(offSet, offSet),
-        Point(panel.width - offSet, panel.height - offSet));
-    offSet += machine.toolRadius;
-    var millRect = Rect(Point(offSet, offSet),
-        Point(panel.width - offSet, panel.height - offSet));
-  }
-}
