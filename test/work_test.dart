@@ -17,6 +17,7 @@ void main() {
       expect(w.comment('averylonglinewithoutspacvesgoingover25inlneght'),
           equals('(averylonglinewithoutspacvesgoingov)\n'
               '(er25inlneght)'));
+      expect(w.comment('c(ommentWith)'), equals('(c[ommentWith])'));
     });
   });
 

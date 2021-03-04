@@ -149,6 +149,10 @@ class Cli {
       }
       panel.handleMidpoint = null;
     }
+    // cleanup pocketDepth
+    if (panel.pocketDepth > 0) {
+      panel.pocketDepth = -panel.pocketDepth;
+    }
   }
 }
 

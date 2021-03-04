@@ -414,6 +414,8 @@ class Work {
   String lineWithComment(String line, String comment) => '$line;  $comment';
 
   String comment(String comment) {
+    comment = comment.replaceAll(')', ']');
+    comment = comment.replaceAll('(', '[');
     var output = <String>[];
     var lines = comment.split('\n');
     for (var line in lines) {

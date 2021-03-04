@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:args/command_runner.dart';
 import 'package:shaker/work.dart';
 
@@ -47,10 +49,37 @@ class ShakerCommand extends Command {
 
   @override
   void run() {
-    if (argResults != null) {
-      Cli.configureMachine(argResults!);
-      Cli.configureShakerPanel(argResults!);
-      print('${Machine().toString()}\n\n${ShakerPanel().toString()}');
+    final results = argResults;
+    if (results != null) {
+      try {
+        Cli.configureMachine(results);
+        Cli.configureShakerPanel(results);
+        var w = ShakerWork();
+        w.generateCode();
+        if (results.rest.isEmpty) {
+                stdout.write(w.gCodeAsString);
+              }
+              else {
+                if (results.rest.length > 1) {
+                  throw ArgumentError('Only provide one output file. Got ${results.rest}');
+                }
+                var fileName = results.rest.first;
+                var file = File(fileName);
+                if (file.existsSync()) {
+                  stdout.write('File $fileName exists. Overwrite? (Y/N)');
+                  var response = stdin.readLineSync();
+                  if (response != null && response.toLowerCase().startsWith('y')) {
+                    file.writeAsStringSync(w.gCodeAsString);
+                  }
+                }
+                else {
+                  file.writeAsStringSync(w.gCodeAsString);
+                }
+              }
+      } catch (e) {
+        stderr.writeln(e);
+        exitCode = 1;
+      }
     }
   }
 }
