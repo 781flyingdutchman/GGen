@@ -51,6 +51,11 @@ class Machine {
   double tabSpacing = 300;
 
   double get tabTopDepth => -materialThickness + tabHeight;
+
+  @override
+  String toString() {
+    return 'Machine with clearanceHeight: $clearanceHeight, safeHeight: $safeHeight, toolDiameter: $toolDiameter, maxCutStepDepth: $maxCutStepDepth, horizontalFeedCutting: $horizontalFeedCutting, horizontalFeedMilling: $horizontalFeedMilling, verticalFeedDown: $verticalFeedDown, verticalFeedUp: $verticalFeedUp, materialThickness: $materialThickness, millOverlap: $millOverlap, tabHeight: $tabHeight, tabWidth: $tabWidth, tabSpacing: $tabSpacing';
+  }
 }
 
 /// Base class for the actual work
@@ -408,7 +413,33 @@ class Work {
 
   String lineWithComment(String line, String comment) => '$line;  $comment';
 
-  String comment(String comment) => '($comment)';
+  String comment(String comment) {
+    var output = <String>[];
+    var lines = comment.split('\n');
+    for (var line in lines) {
+      while (line.length > 35) {
+        var i = 34;
+        while (i > 0) {
+          if (line[i] == ' ') {
+            break;
+          }
+          i--;
+        }
+        if (i==0) {
+          i = 34; // if no spaces found
+        }
+        output.add('(${line.substring(0, i)})');
+        if (line.substring(i, i+1) == ' ') {
+          line = line.substring(i + 1);
+        }
+        else {
+          line = line.substring(i);
+        }
+      }
+      output.add('($line)');
+    }
+    return output.join('\n');
+  }
 
   String space() => '';
 

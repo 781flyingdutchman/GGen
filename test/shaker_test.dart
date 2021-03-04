@@ -15,7 +15,7 @@ void main() {
     var panel = ShakerPanel();
     panel.handleMidpoint = Point(50, 50);
     panel.handleOrientationLandscape = true;
-    panel.handleSize = 4.inch;
+    panel.handleWidth = 4.inch;
     var w = ShakerWork();
     w.generateCode();
     print(w.gCodeAsString);

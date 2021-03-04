@@ -18,7 +18,11 @@ class Point {
   bool isSameVerticalAs(Point other) => (x - other.x).abs() < precision;
   
   double distanceTo(Point p) => sqrt(pow(x - p.x, 2) + pow(y - p.y, 2));
-  
+
+  @override
+  String toString() {
+    return '($x, $y)';
+  }
 }
 
 class Rect {

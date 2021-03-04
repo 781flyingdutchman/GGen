@@ -1,7 +1,6 @@
-
+import 'conversion.dart';
 import 'objects.dart';
 import 'work.dart';
-import 'conversion.dart';
 
 /// Configuration parameters for the Panel
 class ShakerPanel {
@@ -14,7 +13,7 @@ class ShakerPanel {
   double pocketDepth = -4;
   Point? handleMidpoint; // if null, no handle
   bool? handleOrientationLandscape; // if null, single hole
-  double handleSize = 0;
+  double handleWidth = 0;
 
   factory ShakerPanel() {
     return _singleton;
@@ -24,8 +23,11 @@ class ShakerPanel {
 
   bool get isLandscape => width > height;
 
+  @override
+  String toString() {
+    return 'ShakerPanel with width: $width, height: $height, styleWidth: $styleWidth, pocketDepth: $pocketDepth, handleMidpoint: $handleMidpoint, handleOrientationLandscape: $handleOrientationLandscape, handleWidth: $handleWidth';
+  }
 }
-
 
 class ShakerWork extends Work {
   @override
@@ -44,11 +46,27 @@ class ShakerWork extends Work {
     // add operations
     final handleMidpoint = panel.handleMidpoint;
     if (handleMidpoint != null) {
-      addHandleHoles(handleMidpoint, landscape: panel.handleOrientationLandscape, size: panel.handleSize);
+      addHandleHoles(handleMidpoint,
+          landscape: panel.handleOrientationLandscape, size: panel.handleWidth);
     }
-    addRectCut(innerRect, insideCut: true, cutDepth: panel.pocketDepth, description: 'Inside edge trim');
+    addRectCut(innerRect,
+        insideCut: true,
+        cutDepth: panel.pocketDepth,
+        description: 'Inside edge trim');
     addRectMill(millRect, millDepth: panel.pocketDepth);
     addRectCut(panelRect, makeTabs: true, description: 'Panel outline');
+  }
+
+  @override
+  void header() {
+    super.header();
+    gCode.addAll([
+      space(),
+      comment(Machine().toString()),
+      space(),
+      comment(ShakerPanel().toString()),
+      space()
+    ]);
   }
 
   @override
@@ -60,4 +78,3 @@ class ShakerWork extends Work {
     }
   }
 }
-
