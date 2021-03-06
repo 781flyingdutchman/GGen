@@ -1,4 +1,3 @@
-
 /// Conversions convert the value given in a unit other than mm, to the
 /// value in mm.
 ///
@@ -6,9 +5,13 @@
 /// Distance-per-time units are converted to mm/min
 extension MmConversions on num {
   double get cm => this * 10;
+
   double get m => this * 1000;
+
   double get inch => this * 25.4;
+
   double get ft => inch * 12;
+
   double get fpm => ft; // feet per minute
   double get ipm => inch; // inch per minute
   double get cpm => cm; // centimeter per minute
@@ -20,9 +23,11 @@ extension MmConversions on num {
 /// Singleton to help with GCode parsing
 class GParser {
   final _floatGroup = r'([-+]?[0-9]*\.?[0-9]+)'; // eg -3.12
+  final _intGroup = r'([0-9]*)'; // eg 3
   final _whitespaceMatch = r'\s*'; // used with preceding letter, eg X
   final _distanceUnitGroup = r"""(m|cm|mm|in|inch|inches|\"|ft|feet|')?""";
-  final _feedUnitGroup = r'(mm\/min|mm\/s|cm\/min|in\/min|inch\/min|inches\/min|in\/s|inch\/s|inches\/s|ft\/min|feet\/min)?';
+  final _feedUnitGroup =
+      r'(mm\/min|mm\/s|cm\/min|in\/min|inch\/min|inches\/min|in\/s|inch\/s|inches\/s|ft\/min|feet\/min)?';
 
   static final GParser _singleton = GParser._internal();
 
@@ -32,18 +37,26 @@ class GParser {
 
   GParser._internal();
 
-  /// returns the value of a parameter
+  /// Returns the value of a parameter
   ///
   /// eg in [input] 'G1 X-1.23' calling with [parameter] 'X' will return -1.23
   /// Throws ArgumentError if argument cannot be found or value not parsed
-  double parseValueOf(String parameter, String input) {
-    final exp = RegExp(parameter + _whitespaceMatch + _floatGroup);
+  double parseValueOf(String parameter, String input, {bool isInt = false}) {
+    final exp = isInt
+        ? RegExp(parameter + _whitespaceMatch + _intGroup)
+        : RegExp(parameter + _whitespaceMatch + _floatGroup);
     final match = exp.firstMatch(input);
     if (match == null) {
       throw ArgumentError('Parameter $parameter not found in $input');
     }
     return double.parse(match.group(1)!);
   }
+
+  /// Returns the int values of a parameter as a list
+  ///
+  /// eg in [input] 'G1 X-1.23' calling with [parameter] 'G' will return [1]
+  /// Throws ArgumentError if argument cannot be found or value not parsed
+  int parseIntValueOf(String parameter, String input) => parseValueOf(parameter, input, isInt: true).truncate();
 
   /// Convert distance values to mm
   double parseDistanceValue(String valueWithUnit) {
@@ -82,7 +95,6 @@ class GParser {
 
       default:
         throw ArgumentError('Could not parse $valueWithUnit as a distance');
-        
     }
   }
 
@@ -126,10 +138,6 @@ class GParser {
 
       default:
         throw ArgumentError('Could not parse $valueWithUnit as a feed value');
-
     }
   }
-
-
 }
-

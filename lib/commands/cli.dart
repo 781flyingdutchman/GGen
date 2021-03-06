@@ -2,7 +2,7 @@ import 'dart:io';
 
 import 'package:args/args.dart';
 import 'package:args/command_runner.dart';
-import 'package:shaker/shaker.dart';
+import 'package:shaker/shaker_work.dart';
 
 import '../conversion.dart';
 import '../objects.dart';

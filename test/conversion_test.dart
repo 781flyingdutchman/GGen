@@ -25,5 +25,8 @@ void main() {
     expect(GParser().parseValueOf('X', input), equals(1.23));
     input = 'G0';
     expect(() => GParser().parseValueOf('X', input), throwsArgumentError);
+    // integers
+    expect(GParser().parseIntValueOf('G', input), equals(0));
+    expect(() => GParser().parseIntValueOf('X', input), throwsArgumentError);
   });
 }

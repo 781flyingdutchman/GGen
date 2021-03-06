@@ -1,5 +1,5 @@
 import 'package:shaker/objects.dart';
-import 'package:shaker/shaker.dart';
+import 'package:shaker/shaker_work.dart';
 import 'package:test/test.dart';
 import 'package:shaker/conversion.dart';
 
