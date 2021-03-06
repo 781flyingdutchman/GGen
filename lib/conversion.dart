@@ -37,6 +37,18 @@ class GParser {
 
   GParser._internal();
 
+  /// True if input contains parameter
+  ///
+  /// Tests for parameter followed by float or int
+  bool hasParameter(String parameter, String input)  {
+    var exp = RegExp(parameter + _whitespaceMatch + _floatGroup);
+    if (exp.hasMatch(input)) {
+      return true;
+    }
+    exp = RegExp(parameter + _whitespaceMatch + _intGroup);
+    return exp.hasMatch(input);
+  }
+
   /// Returns the value of a parameter
   ///
   /// eg in [input] 'G1 X-1.23' calling with [parameter] 'X' will return -1.23

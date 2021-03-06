@@ -25,6 +25,25 @@ class Point {
   }
 }
 
+class Point3D extends Point {
+  final double z;
+
+  Point3D(double x, double y, this.z) : super(x, y);
+
+  @override
+  bool isSameAs(Point other) => throw UnimplementedError('isSameAs not available for 3D');
+
+  /// Returns distance to another Point3D
+  double distanceTo3D(Point3D p) {
+    var dx = (p.x - x).abs();
+    var dy = (p.y - y).abs();
+    var dz = (p.z - z).abs();
+    return sqrt(dx * dx + dy * dy + dz * dz);
+  }
+
+  Point3D operator +(Point3D p) => Point3D(x + p.x, y + p.y, z + p.z);
+}
+
 class Rect {
   final Point bl, tr;
 
