@@ -104,6 +104,14 @@ class Rect {
 
   Point get br => Point(tr.x, bl.y);
 
+  double get left => bl.x;
+
+  double get right => tr.x;
+
+  double get top => tr.y;
+
+  double get bottom => bl.y;
+
   double get width => tr.x - bl.x;
 
   double get height => tr.y - bl.y;
@@ -111,6 +119,14 @@ class Rect {
   bool get isLandscape => width > height;
 
   bool hasPoint(Point p) => p == bl || p == tl || p == tr || p == br;
+
+  bool overlaps(Rect other) =>
+      left < other.right &&
+      right > other.left &&
+      top > other.bottom &&
+      bottom < other.top;
+
+  Point get center => Point((bl.x + tr.x) / 2, (bl.y + tl.y) / 2);
 
   // Adjustments (return a new Rect as it is immutable)
   Rect withNewLeft(double l) => Rect(Point(l, bl.y), tr);
@@ -121,6 +137,17 @@ class Rect {
 
   Rect withNewBottom(double b) => Rect(Point(bl.x, b), tr);
 
+  Rect centerOn(Rect other) =>
+      translated(Point(other.center.x - center.x, other.center.y - center.y));
+
+  Rect alignLeftWith(Rect other) =>translated(Point(other.bl.x - bl.x, 0));
+
+  Rect alignRightWith(Rect other) =>translated(Point(other.tr.x - tr.x, 0));
+
+  /// Returns this rect translated by the x and y of [translate]
+  Rect translated(Point translate) => Rect(
+      Point(bl.x + translate.x, bl.y + translate.y),
+      Point(tr.x + translate.x, tr.y + translate.y));
 
   @override
   String toString() {
@@ -137,7 +164,6 @@ class Rect {
 
   @override
   int get hashCode => bl.hashCode ^ tr.hashCode;
-
 }
 
 class Line {

@@ -279,6 +279,7 @@ class Workpiece {
 
   void simG21(final Map<String, dynamic> lineDict) {
     metric = false;
+    error('G21 (imperial system) is not implemented. Use metric G17');
   }
 
   void simG90(final Map<String, dynamic> lineDict) {
