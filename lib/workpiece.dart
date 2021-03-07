@@ -15,11 +15,10 @@ class Workpiece {
 
   // machine state variables
   Point3D toolPoint = Point3D(0, 0, 4);
-  double minX = 0,
-      minY = 0,
-      maxX = 0,
-      maxY = 0,
-      f = 0;
+  Point3D physicalToolPoint = Point3D(0, 0, 4); // does not respond to coord changes
+  Rect box = Rect.zero();
+  Rect physicalBox = Rect.zero();
+  double f = 0;
   bool absolute = true; // G90
   bool metric = true; // G21
   Duration elapsedTime = Duration(seconds: 0);
@@ -108,7 +107,7 @@ class Workpiece {
     yield lineDict;
   }
 
-
+  void simulate() => gCodeDicts.forEach(simulateLine);
 
   /// Simulate the tool movement for this line and update min/max values
   ///
@@ -162,21 +161,17 @@ class Workpiece {
   void simG0(final Map<String, dynamic> lineDict) {
     var to = absolute ? parseXyz(lineDict, startValues: toolPoint) : toolPoint +
         parseXyz(lineDict);
-    var distance = toolPoint.distanceTo3D(to);
-    elapsedTime += timeToMove(distance, 1000);
-    toolPoint = to;
+    linearMoveTo(to, 1000);
   }
 
   void simG1(final Map<String, dynamic> lineDict) {
     var to = absolute ? parseXyz(lineDict, startValues: toolPoint) : toolPoint +
         parseXyz(lineDict);
-    var distance = toolPoint.distanceTo3D(to);
     parseAndSetF(lineDict);
     if (f == 0) {
       ArgumentError('Attempting to use G1 with F equal to 0');
     }
-    elapsedTime += timeToMove(distance, f);
-    toolPoint = to;
+    linearMoveTo(to, f);
   }
 
   void simG10(final Map<String, dynamic> lineDict) {
@@ -189,6 +184,7 @@ class Workpiece {
     if (lCode != 20 || pCode != 1) {
       error('Expect G10 to use L20 P1');
     }
+    // set toolPoint without actual movement
     toolPoint = absolute ? parseXyz(lineDict, startValues: toolPoint) : toolPoint +
         parseXyz(lineDict);
   }
@@ -209,13 +205,25 @@ class Workpiece {
     absolute = false;
   }
 
-
-
   void simNoOp(final Map<String, dynamic> lineDict) => null;
+  
+  /// Move to absolute point [to] at given [feedRate]
+  void linearMoveTo(Point3D to, double feedRate) {
+    var distance = toolPoint.distanceTo3D(to);
+    elapsedTime += timeToMove(distance, feedRate);
+    var movement = to - toolPoint;
+    physicalToolPoint += movement;
+    toolPoint = to;
+  }
 
-  /// Time it takes to move [distance] in mm at [f] mm/min
-  Duration timeToMove(double distance, double f) =>
-      Duration(milliseconds: (distance / f * 60000).toInt());
+  /// Update [box] and [physicalBox]
+  void updateBoxes() {
+  //TODO
+  }
+
+  /// Time it takes to move [distance] in mm at [feedRate] mm/min
+  Duration timeToMove(double distance, double feedRate) =>
+      Duration(milliseconds: (distance / feedRate * 60000).toInt());
 
   void error(String message) {
     throw StateError(message);

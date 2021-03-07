@@ -10,6 +10,14 @@ class Point {
 
   Point(this.x, this.y);
 
+  Point.zero() : x = 0, y = 0;
+
+  bool toRightOf(Point p) => x > p.x;
+  bool toLeftOf(Point p) => x < p.x;
+  bool below(Point p) => y < p.y;
+  bool above(Point p) => y > p.y;
+
+
   bool isSameAs(Point other) =>
       (x - other.x).abs() < precision && (y - other.y).abs() < precision;
 
@@ -30,6 +38,10 @@ class Point3D extends Point {
 
   Point3D(double x, double y, this.z) : super(x, y);
 
+  Point3D.zero() : z = 0, super(0, 0);
+
+  Point get point => Point(x, y);  // without z
+
   @override
   bool isSameAs(Point other) => throw UnimplementedError('isSameAs not available for 3D');
 
@@ -42,6 +54,15 @@ class Point3D extends Point {
   }
 
   Point3D operator +(Point3D p) => Point3D(x + p.x, y + p.y, z + p.z);
+  Point3D operator -(Point3D p) => Point3D(x - p.x, y - p.y, z - p.z);
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is Point3D && runtimeType == other.runtimeType && x == other.x && y == other.y && z == other.z;
+
+  @override
+  int get hashCode => x.hashCode + y.hashCode + y.hashCode;
 }
 
 class Rect {
@@ -50,6 +71,7 @@ class Rect {
   /// Rectangle defined by bottom-left and top-right points
   Rect(this.bl, this.tr);
 
+  Rect.zero() : bl = Point.zero(), tr = Point.zero();
 
   Point get tl => Point(bl.x, tr.y);
   Point get br => Point(tr.x, bl.y);
