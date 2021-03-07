@@ -1,10 +1,13 @@
 import 'dart:math';
 
+import 'package:logging/logging.dart';
+
 import 'conversion.dart';
 import 'objects.dart';
 
 /// Base class for existing workpiece
 class Workpiece {
+  final log = Logger('Workpiece');
   final String gCode;
 
   final _lineComment = RegExp(r'\(.*\)$');
@@ -15,7 +18,8 @@ class Workpiece {
 
   // machine state variables
   Point3D toolPoint = Point3D(0, 0, 4);
-  Point3D physicalToolPoint = Point3D(0, 0, 4); // does not respond to coord changes
+  Point3D physicalToolPoint =
+      Point3D(0, 0, 4); // does not respond to coord changes
   Rect box = Rect.zero();
   Rect physicalBox = Rect.zero();
   double f = 0;
@@ -30,10 +34,6 @@ class Workpiece {
   // Initialize all machine state variables
   void initMachine() {
     toolPoint = Point3D(0, 0, 4);
-    minX = 0;
-    minY = 0;
-    maxX = 0;
-    maxY = 0;
     f = 0;
     absolute = true; // G90
     metric = true; // G21
@@ -94,6 +94,7 @@ class Workpiece {
   Iterable<Map<String, dynamic>> codeDict(String line) sync* {
     final p = GParser();
     final lineDict = <String, dynamic>{};
+    lineDict['line'] = line; // the original line
     _parameters.forEach((parameter) {
       if (p.hasParameter(parameter, line)) {
         lineDict[parameter] = p.parseValueOf(parameter, line);
@@ -120,6 +121,8 @@ class Workpiece {
     final gCommands = {
       0: simG0,
       1: simG1,
+      2: simG2,
+      3: simG3,
       10: simG10,
       20: simG20,
       21: simG21,
@@ -131,8 +134,7 @@ class Workpiece {
       var simFunc = gCommands[gCommand];
       if (simFunc != null) {
         simFunc(lineDict);
-      }
-      else {
+      } else {
         throw ArgumentError('G-code G$gCommand is not supported');
       }
     }
@@ -140,9 +142,11 @@ class Workpiece {
 
   // action code functions for simulating a specific code, eg G0
 
-  /// Returns [Point3D] representing the paramters X, Y and Z in the code line
+  /// Returns [Point3D] representing the parameters X, Y and Z in the code line
   ///
   /// Missing parameters are 0, unless [startValues] are given
+  /// The caller must determine whether to interpret XYZ as an absolute or a
+  /// relative value.
   Point3D parseXyz(final Map<String, dynamic> lineDict,
       {Point3D? startValues}) {
     var x = startValues?.x ?? 0.0;
@@ -154,25 +158,99 @@ class Workpiece {
     return Point3D(x, y, z);
   }
 
+  /// Returns [Point3D] representing the center of a circle defined by
+  /// parameters I, J and K in the code line
+  ///
+  /// Missing parameters are 0, unless [startValues] are given
+  /// IJK are always interpreted as relative to the start value
+  /// and the returned point is the absolute center point
+  Point3D parseIjk(final Map<String, dynamic> lineDict,
+      {required Point3D startValues}) {
+    var i = startValues.x;
+    var j = startValues.y;
+    var k = startValues.z;
+    if (lineDict.containsKey('I')) i += lineDict['I']!;
+    if (lineDict.containsKey('J')) j += lineDict['J']!;
+    if (lineDict.containsKey('K')) k += lineDict['K']!;
+    return Point3D(i, j, k);
+  }
+
   void parseAndSetF(final Map<String, dynamic> lineDict) {
     if (lineDict.containsKey('F')) f = lineDict['F']!;
   }
 
   void simG0(final Map<String, dynamic> lineDict) {
-    var to = absolute ? parseXyz(lineDict, startValues: toolPoint) : toolPoint +
-        parseXyz(lineDict);
+    var to = absolute
+        ? parseXyz(lineDict, startValues: toolPoint)
+        : toolPoint + parseXyz(lineDict);
+    if (toolPoint.z <= 0 || to.z <= 0) {
+      warning('G0 with tool inside material', lineDict: lineDict);
+    }
     linearMoveTo(to, 1000);
   }
 
   void simG1(final Map<String, dynamic> lineDict) {
-    var to = absolute ? parseXyz(lineDict, startValues: toolPoint) : toolPoint +
-        parseXyz(lineDict);
+    var to = absolute
+        ? parseXyz(lineDict, startValues: toolPoint)
+        : toolPoint + parseXyz(lineDict);
     parseAndSetF(lineDict);
     if (f == 0) {
       ArgumentError('Attempting to use G1 with F equal to 0');
     }
     linearMoveTo(to, f);
   }
+
+  void simG2_3(final Map<String, dynamic> lineDict, {required bool clockWise}) {
+    var to = absolute
+        ? parseXyz(lineDict, startValues: toolPoint)
+        : toolPoint + parseXyz(lineDict);
+    var center = parseIjk(lineDict, startValues: toolPoint);
+    // do double center check
+    final r = center.distanceTo3D(toolPoint);
+    if (!almostEqual(r, center.distanceTo3D(to))) {
+      error('Circle midpoint not defined correctly', lineDict: lineDict);
+      return;
+    }
+    // calculate start and end angles that can be reached clockwise or
+    // anti-clockwise as required, then make linear moves for each
+    // degree of angle change
+    var aStart = atan2(toolPoint.y - center.y, toolPoint.x - center.x);
+    var aEnd = atan2(to.y - center.y, to.x - center.x);
+    final aIncrement = 2 * pi / 360;
+    if (clockWise) {
+      while (aStart < aEnd) {
+        aStart += 2 * pi;
+      }
+      var a = aStart;
+      while (a > aEnd) {
+        a = max(a - aIncrement, aEnd);
+        if (almostEqual(a, aEnd)) a = aEnd;
+        var stepTo = Point3D(center.x + cos(a) * r, center.y + sin(a) * r, toolPoint.z);
+        linearMoveTo(stepTo, f);
+      }
+    }
+    else {
+      while (aStart > aEnd) {
+        aStart -= 2 * pi;
+      }
+      var a = aStart;
+      while (a < aEnd) {
+        a = min(a + aIncrement, aEnd);
+        if (almostEqual(a, aEnd)) a = aEnd;
+        var stepTo = Point3D(center.x + cos(a) * r, center.y + sin(a) * r, toolPoint.z);
+        linearMoveTo(stepTo, f);
+      }
+    }
+  }
+
+  void simG2(final Map<String, dynamic> lineDict) {
+    simG2_3(lineDict, clockWise: true);
+  }
+
+  void simG3(final Map<String, dynamic> lineDict) {
+    simG2_3(lineDict, clockWise: false);
+  }
+
 
   void simG10(final Map<String, dynamic> lineDict) {
     // coordinate system reset
@@ -185,8 +263,10 @@ class Workpiece {
       error('Expect G10 to use L20 P1');
     }
     // set toolPoint without actual movement
-    toolPoint = absolute ? parseXyz(lineDict, startValues: toolPoint) : toolPoint +
-        parseXyz(lineDict);
+    toolPoint = absolute
+        ? parseXyz(lineDict, startValues: toolPoint)
+        : toolPoint + parseXyz(lineDict);
+    updateBoxes();
   }
 
   void simG20(final Map<String, dynamic> lineDict) {
@@ -206,7 +286,7 @@ class Workpiece {
   }
 
   void simNoOp(final Map<String, dynamic> lineDict) => null;
-  
+
   /// Move to absolute point [to] at given [feedRate]
   void linearMoveTo(Point3D to, double feedRate) {
     var distance = toolPoint.distanceTo3D(to);
@@ -214,19 +294,45 @@ class Workpiece {
     var movement = to - toolPoint;
     physicalToolPoint += movement;
     toolPoint = to;
+    updateBoxes();
   }
 
   /// Update [box] and [physicalBox]
   void updateBoxes() {
-  //TODO
+    if (toolPoint.toLeftOf(box.bl)) box = box.withNewLeft(toolPoint.x);
+    if (toolPoint.toRightOf(box.tr)) box = box.withNewRight(toolPoint.x);
+    if (toolPoint.above(box.tr)) box = box.withNewTop(toolPoint.y);
+    if (toolPoint.below(box.bl)) box = box.withNewBottom(toolPoint.y);
+
+    if (physicalToolPoint.toLeftOf(physicalBox.bl)) {
+      physicalBox = physicalBox.withNewLeft(physicalToolPoint.x);
+    }
+    if (physicalToolPoint.toRightOf(physicalBox.tr)) {
+      physicalBox = physicalBox.withNewRight(physicalToolPoint.x);
+    }
+    if (physicalToolPoint.above(physicalBox.tr)) {
+      physicalBox = physicalBox.withNewTop(physicalToolPoint.y);
+    }
+    if (physicalToolPoint.below(physicalBox.bl)) {
+      physicalBox = physicalBox.withNewBottom(physicalToolPoint.y);
+    }
   }
 
   /// Time it takes to move [distance] in mm at [feedRate] mm/min
   Duration timeToMove(double distance, double feedRate) =>
       Duration(milliseconds: (distance / feedRate * 60000).toInt());
 
-  void error(String message) {
-    throw StateError(message);
+  void warning(String message, {final Map<String, dynamic>? lineDict}) {
+    if (lineDict != null) {
+      message += ' in line ${lineDict['line']}';
+    }
+    log.warning(message);
   }
 
+  void error(String message, {final Map<String, dynamic>? lineDict}) {
+    if (lineDict != null) {
+      message += ' in line ${lineDict['line']}';
+    }
+    throw StateError(message);
+  }
 }

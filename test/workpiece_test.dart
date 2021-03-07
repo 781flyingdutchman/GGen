@@ -20,6 +20,34 @@ void main() {
       var w = Workpiece('G0 X1\nM2\nG21 G90');
       expect(w.gCodeDicts, equals([{'X': 1.0, 'G': 0}, {'M': 2}, {'G': 21}, {'G': 90}]));
     });
+
+    test('updateBoxes', () {
+      var w = Workpiece('G1 X10 Y 10 F100');
+      w.toolPoint = Point3D(10, 11, 0);
+      w.updateBoxes();
+      expect(w.box.bl, equals(Point(0, 0)));
+      expect(w.box.tr, equals(Point(10, 11)));
+      w.toolPoint = Point3D(-10, -11, 0);
+      w.updateBoxes();
+      expect(w.box.bl, equals(Point(-10, -11)));
+      expect(w.box.tr, equals(Point(10, 11)));
+      expect(w.physicalBox, Rect(Point(0, 0), Point(0, 0)));
+      w.toolPoint = Point3D(0, 0, 0); // inside box, so no change
+      w.updateBoxes();
+      expect(w.box.bl, equals(Point(-10, -11)));
+      expect(w.box.tr, equals(Point(10, 11)));
+      expect(w.physicalBox, Rect(Point(0, 0), Point(0, 0)));
+      // move physicalToolPoint
+      w.physicalToolPoint = Point3D(10, 11, 0);
+      w.updateBoxes();
+      expect(w.physicalBox, Rect(Point(0, 0), Point(10, 11)));
+    });
+
+    test('elapsedTime', () {
+      var w = Workpiece('G1 X100 F100');
+      w.simulate();
+      expect(w.elapsedTime, equals(Duration(minutes: 1)));
+    });
   });
 
   group('Simulation', () {
@@ -37,6 +65,32 @@ void main() {
       w = Workpiece('G1 X10 Y 10 F100\nG91 G1 X1 Y1\nG90 G1 X0 Z-1.0');
       w.simulate();
       expect(w.toolPoint, equals(Point3D(0, 11, -1)));
+    });
+
+    test('G2', () {
+      var w = Workpiece('G1 Y10 F100\nG2 X10 Y0 I0 J-10');
+      w.simulate();
+      expect(w.toolPoint, equals(Point3D(10, 0, 4)));
+      expect(w.box, equals(Rect(Point(0, 0), Point(10, 10))));
+      w = Workpiece('G1 Y-10 F100\nG2 X10 Y0 I0 J-10');
+      expect(() => w.simulate(), throwsStateError); // center improperly defined
+      w = Workpiece('G1 Y-10 F100\nG2 X10 Y0 I0 J+10');
+      w.simulate();
+      expect(w.toolPoint, equals(Point3D(10, 0, 4)));
+      expect(w.box, equals(Rect(Point(-10, -10), Point(10, 10))));
+    });
+
+    test('G3', () {
+      var w = Workpiece('G1 Y10 F100\nG3 X10 Y0 I0 J-10');
+      w.simulate();
+      expect(w.toolPoint, equals(Point3D(10, 0, 4)));
+      expect(w.box, equals(Rect(Point(-10, -10), Point(10, 10))));
+      w = Workpiece('G1 Y-10 F100\nG3 X10 Y0 I0 J-10');
+      expect(() => w.simulate(), throwsStateError); // center improperly defined
+      w = Workpiece('G1 Y-10 F100\nG3 X10 Y0 I0 J+10');
+      w.simulate();
+      expect(w.toolPoint, equals(Point3D(10, 0, 4)));
+      expect(w.box, equals(Rect(Point(0, -10), Point(10, 0))));
     });
 
   });
