@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:args/command_runner.dart';
-import 'package:shaker/work.dart';
+import 'package:shaker/work_generator.dart';
 
 import '../shaker_work.dart';
 import 'cli.dart';

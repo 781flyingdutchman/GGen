@@ -1,6 +1,6 @@
 import 'conversion.dart';
 import 'objects.dart';
-import 'work.dart';
+import 'work_generator.dart';
 
 /// Configuration parameters for the Panel
 class ShakerPanel {
@@ -29,7 +29,7 @@ class ShakerPanel {
   }
 }
 
-class ShakerWork extends Work {
+class ShakerWork extends WorkGenerator {
   @override
   void workpieceCode() {
     // assume bottom left of panel is (0, 0)

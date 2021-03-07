@@ -58,10 +58,10 @@ class Machine {
   }
 }
 
-/// Base class for the actual work
+/// Base class for the actual work generation
 ///
 /// Extends this class and override [generateCode]
-class Work {
+class WorkGenerator {
   final gCode = <String>[];
   Point toolPoint = Point(0, 0);
   double toolZ = 0;
@@ -245,7 +245,7 @@ class Work {
           ? movePoints['tabs']!
           : movePoints['normal']!;
       points.forEach((p) {
-        if (cutRect.hasPoint(p)) {
+        if (cutRect.hasCorner(p)) {
           // corner of rectangle, so move there
           gCode.add(
               linearMoveToPoint(p, targetZ, machine.horizontalFeedCutting));

@@ -118,7 +118,7 @@ class Rect {
 
   bool get isLandscape => width > height;
 
-  bool hasPoint(Point p) => p == bl || p == tl || p == tr || p == br;
+  bool hasCorner(Point p) => p == bl || p == tl || p == tr || p == br;
 
   bool overlaps(Rect other) =>
       left < other.right &&
@@ -129,20 +129,32 @@ class Rect {
   Point get center => Point((bl.x + tr.x) / 2, (bl.y + tl.y) / 2);
 
   // Adjustments (return a new Rect as it is immutable)
+
+  /// Return Rect of different size, with a new left
   Rect withNewLeft(double l) => Rect(Point(l, bl.y), tr);
 
+  /// Return Rect of different size, with a new right
   Rect withNewRight(double r) => Rect(bl, Point(r, tr.y));
 
+  /// Return Rect of different size, with a new top
   Rect withNewTop(double t) => Rect(bl, Point(tr.x, t));
 
+  /// Return Rect of different size, with a new bottom
   Rect withNewBottom(double b) => Rect(Point(bl.x, b), tr);
 
+  /// Returns Rect grown by s, with the same center
+  Rect grow(double s) => Rect(
+      Point(bl.x - s / 2, bl.y - s / 2), Point(tr.x + s / 2, tr.y + s / 2));
+
+  /// Returns Rect of same size, centered on another Rect
   Rect centerOn(Rect other) =>
       translated(Point(other.center.x - center.x, other.center.y - center.y));
 
-  Rect alignLeftWith(Rect other) =>translated(Point(other.bl.x - bl.x, 0));
+  /// Returns Rect of same size, with the left aligned another Rect
+  Rect alignLeftWith(Rect other) => translated(Point(other.bl.x - bl.x, 0));
 
-  Rect alignRightWith(Rect other) =>translated(Point(other.tr.x - tr.x, 0));
+  /// Returns Rect of same size, with the right aligned another Rect
+  Rect alignRightWith(Rect other) => translated(Point(other.tr.x - tr.x, 0));
 
   /// Returns this rect translated by the x and y of [translate]
   Rect translated(Point translate) => Rect(

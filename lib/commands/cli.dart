@@ -6,7 +6,7 @@ import 'package:shaker/shaker_work.dart';
 
 import '../conversion.dart';
 import '../objects.dart';
-import '../work.dart';
+import '../work_generator.dart';
 import 'shaker_command.dart';
 
 class Cli {

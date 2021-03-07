@@ -6,7 +6,7 @@ import 'conversion.dart';
 import 'objects.dart';
 
 /// Base class for existing workpiece
-class Workpiece {
+class WorkSimulator {
   final log = Logger('Workpiece');
   final String gCode;
 
@@ -27,7 +27,7 @@ class Workpiece {
   bool metric = true; // G21
   Duration elapsedTime = Duration(seconds: 0);
 
-  Workpiece(this.gCode) {
+  WorkSimulator(this.gCode) {
     initMachine();
   }
 
@@ -294,6 +294,9 @@ class Workpiece {
 
   /// Move to absolute point [to] at given [feedRate]
   void linearMoveTo(Point3D to, double feedRate) {
+    if (feedRate == 0) {
+      throw StateError('Attempting move with feed rate 0');
+    }
     var distance = toolPoint.distanceTo3D(to);
     elapsedTime += timeToMove(distance, feedRate);
     var movement = to - toolPoint;

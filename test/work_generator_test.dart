@@ -1,12 +1,12 @@
 import 'package:shaker/conversion.dart';
 import 'package:shaker/objects.dart';
-import 'package:shaker/work.dart';
+import 'package:shaker/work_generator.dart';
 import 'package:test/test.dart';
 
 void main() {
   group('utils', () {
     test('comment', () {
-      var w = Work();
+      var w = WorkGenerator();
       expect(w.comment('test'), equals('(test)'));
       expect(
           w.comment(
@@ -23,14 +23,14 @@ void main() {
 
   group('addRectCut', () {
     test('addRectCut regular', () {
-      var w = Work();
+      var w = WorkGenerator();
       var rect = Rect(Point(0, 0), Point(100, 100));
       w.addRectCut(rect);
       expect(
           w.gCode.toString(),
           equals(
               '[, (Rectangle cut), G0 Z5.0000, G0 X-3.1750 Y-3.1750, G0 Z1.0000, G1 X-3.1750 Y-3.1750 Z-5.0000 F60.0000, G1 X-3.1750 Y103.1750 Z-5.0000 F500.0000, G1 X103.1750 Y103.1750 Z-5.0000 F500.0000, G1 X103.1750 Y-3.1750 Z-5.0000 F500.0000, G1 X-3.1750 Y-3.1750 Z-5.0000 F500.0000, G1 X-3.1750 Y-3.1750 Z-10.0000 F60.0000, G1 X-3.1750 Y103.1750 Z-10.0000 F500.0000, G1 X103.1750 Y103.1750 Z-10.0000 F500.0000, G1 X103.1750 Y-3.1750 Z-10.0000 F500.0000, G1 X-3.1750 Y-3.1750 Z-10.0000 F500.0000, G1 X-3.1750 Y-3.1750 Z-15.0000 F60.0000, G1 X-3.1750 Y103.1750 Z-15.0000 F500.0000, G1 X103.1750 Y103.1750 Z-15.0000 F500.0000, G1 X103.1750 Y-3.1750 Z-15.0000 F500.0000, G1 X-3.1750 Y-3.1750 Z-15.0000 F500.0000, G1 X-3.1750 Y-3.1750 Z-20.0000 F60.0000, G1 X-3.1750 Y103.1750 Z-20.0000 F500.0000, G1 X103.1750 Y103.1750 Z-20.0000 F500.0000, G1 X103.1750 Y-3.1750 Z-20.0000 F500.0000, G1 X-3.1750 Y-3.1750 Z-20.0000 F500.0000, G1 X-3.1750 Y-3.1750 Z-21.5000 F60.0000, G1 X-3.1750 Y103.1750 Z-21.5000 F500.0000, G1 X103.1750 Y103.1750 Z-21.5000 F500.0000, G1 X103.1750 Y-3.1750 Z-21.5000 F500.0000, G1 X-3.1750 Y-3.1750 Z-21.5000 F500.0000, G0 Z1.0000;  Rectangle cut done]'));
-      w = Work();
+      w = WorkGenerator();
       expect(() => w.addRectCut(rect, cutDepth: 10), throwsStateError);
       w.addRectCut(rect, cutDepth: -12, description: 'testCut');
       expect(w.gCode[1], equals('(testCut)'));
@@ -41,7 +41,7 @@ void main() {
     });
 
     test('addRectCut with tabs', () {
-      var w = Work();
+      var w = WorkGenerator();
       var rect = Rect(Point(0, 0), Point(1000, 1000));
       w.addRectCut(rect, makeTabs: true);
       expect(
@@ -51,26 +51,26 @@ void main() {
       var numTabs =
           w.gCode.where((element) => element.contains('tab')).toList().length;
       expect(numTabs, 48);
-      w = Work();
+      w = WorkGenerator();
       rect = Rect(Point(0, 0), Point(100, 1000)); //  no tabs on horizontal
       w.addRectCut(rect, makeTabs: true);
       numTabs =
           w.gCode.where((element) => element.contains('tab')).toList().length;
       expect(numTabs, 24);
-      w = Work();
+      w = WorkGenerator();
       rect = Rect(Point(0, 0), Point(1000, 100)); //  no tabs on vertical
       w.addRectCut(rect, makeTabs: true);
       numTabs =
           w.gCode.where((element) => element.contains('tab')).toList().length;
       expect(numTabs, 24);
-      w = Work();
+      w = WorkGenerator();
       rect = Rect(Point(0, 0), Point(100, 100)); //  no tabs on either
       w.addRectCut(rect,
           cutDepth: -10, makeTabs: true); // shallow, only one tab
       numTabs =
           w.gCode.where((element) => element.contains('tab')).toList().length;
       expect(numTabs, 0);
-      w = Work();
+      w = WorkGenerator();
       rect = Rect(Point(0, 0), Point(1000, 1000));
       w.addRectCut(rect,
           cutDepth: -10, makeTabs: true); // shallow, only one tab
@@ -80,7 +80,7 @@ void main() {
     });
 
     test('Inner addRectCut', () {
-      var w = Work();
+      var w = WorkGenerator();
       var rect = Rect(Point(0, 0), Point(100, 100));
       w.addRectCut(rect, insideCut: true);
       expect(
@@ -92,7 +92,7 @@ void main() {
 
   group('addRectMill', () {
     test('addRectMill - landscape', () {
-      var w = Work();
+      var w = WorkGenerator();
       var rect = Rect(Point(0, 0), Point(200, 100));
       w.addRectMill(rect, millDepth: -4);
       var input = w.gCode[3];
@@ -110,7 +110,7 @@ void main() {
     });
 
     test('addRectMill - portrait', () {
-      var w = Work();
+      var w = WorkGenerator();
       var rect = Rect(Point(0, 0), Point(100, 200));
       w.addRectMill(rect, millDepth: -4);
       var input = w.gCode[3];
@@ -128,7 +128,7 @@ void main() {
     });
 
     test('addRectMill - deep', () {
-      var w = Work();
+      var w = WorkGenerator();
       var rect = Rect(Point(0, 0), Point(100, 200));
       w.addRectMill(rect, millDepth: -11);
       // expect 3 'return to bottom left' moves, one for each cut
@@ -139,7 +139,7 @@ void main() {
     });
 
     test('addRectMill - through', () {
-      var w = Work();
+      var w = WorkGenerator();
       var rect = Rect(Point(0, 0), Point(100, 200));
       w.addRectMill(rect); // no millDepth means cut through
       var sortedZs = sortedValuesFor('Z', w);
@@ -149,7 +149,7 @@ void main() {
 
   group('addHandleHoles', () {
     test('Single hole', () {
-      var w = Work();
+      var w = WorkGenerator();
       var p = Point(100, 200);
       w.addHandleHoles(p);
       var sortedXs = sortedValuesFor('X', w);
@@ -161,7 +161,7 @@ void main() {
     });
 
     test('Landscape holes', () {
-      var w = Work();
+      var w = WorkGenerator();
       var p = Point(100, 200);
       w.addHandleHoles(p, landscape: true, size: 10);
       var sortedXs = sortedValuesFor('X', w);
@@ -173,7 +173,7 @@ void main() {
     });
 
     test('Portrait holes', () {
-      var w = Work();
+      var w = WorkGenerator();
       var p = Point(100, 200);
       w.addHandleHoles(p, landscape: false, size: 10);
       var sortedXs = sortedValuesFor('X', w);
@@ -185,7 +185,7 @@ void main() {
     });
 
     test('Partial depth', () {
-      var w = Work();
+      var w = WorkGenerator();
       var p = Point(100, 200);
       w.addHandleHoles(p, drillDepth: -5);
       var sortedXs = sortedValuesFor('X', w);
@@ -197,7 +197,7 @@ void main() {
     });
 
     test('Errors', () {
-      var w = Work();
+      var w = WorkGenerator();
       var p = Point(100, 200);
       expect(() => w.addHandleHoles(p, drillDepth: 5), throwsStateError);
       expect(() => w.addHandleHoles(p, landscape: true), throwsStateError);
@@ -206,7 +206,7 @@ void main() {
 }
 
 /// Returns sorted values of all occurrences of [arg] in the work [w]
-List<double> sortedValuesFor(String arg, Work w) {
+List<double> sortedValuesFor(String arg, WorkGenerator w) {
   var values = <double>{};
   w.gCode.forEach((line) {
     if (line.contains(arg)) {

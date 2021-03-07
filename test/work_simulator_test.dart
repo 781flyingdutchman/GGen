@@ -1,5 +1,5 @@
 import 'package:shaker/objects.dart';
-import 'package:shaker/workpiece.dart';
+import 'package:shaker/work_simulator.dart';
 import 'package:test/test.dart';
 import 'dart:io';
 
@@ -8,22 +8,22 @@ void main() {
   group('utils', () {
 
     test('gCodeWithoutComments', () {
-      var w = Workpiece('A=4\n(comment)\n\n   X=4.5 Z1; test\n()');
+      var w = WorkSimulator('A=4\n(comment)\n\n   X=4.5 Z1; test\n()');
       expect(w.gCodeWithoutComments, equals(['A=4', 'X=4.5 Z1']));
     });
 
     test('gCodeWithSplitGCommands', () {
-      var w = Workpiece('G0 X1\nM2\nG21 G90');
+      var w = WorkSimulator('G0 X1\nM2\nG21 G90');
       expect(w.gCodeWithSplitGCommands, equals(['G0 X1', 'M2', 'G21', 'G90']));
     });
 
     test('codeDict', () {
-      var w = Workpiece('G0 X1\nM2\nG21 G90');
+      var w = WorkSimulator('G0 X1\nM2\nG21 G90');
       expect(w.gCodeDicts, equals([{'X': 1.0, 'G': 0}, {'M': 2}, {'G': 21}, {'G': 90}]));
     });
 
     test('updateBoxes', () {
-      var w = Workpiece('G1 X10 Y 10 F100');
+      var w = WorkSimulator('G1 X10 Y 10 F100');
       w.toolPoint = Point3D(10, 11, 0);
       w.updateBoxes();
       expect(w.box.bl, equals(Point(0, 0)));
@@ -45,7 +45,7 @@ void main() {
     });
 
     test('elapsedTime', () {
-      var w = Workpiece('G1 X100 F100');
+      var w = WorkSimulator('G1 X100 F100');
       w.simulate();
       expect(w.elapsedTime, equals(Duration(minutes: 1)));
     });
@@ -54,41 +54,41 @@ void main() {
   group('Simulation', () {
 
     test('G0 and G1 with G90 and G91', () {
-      var w = Workpiece('G0 X10 Y 10');
+      var w = WorkSimulator('G0 X10 Y 10');
       w.simulate();
       expect(w.toolPoint, equals(Point3D(10, 10, 4)));
-      w = Workpiece('G1 X10 Y 10 F100');
+      w = WorkSimulator('G1 X10 Y 10 F100');
       w.simulate();
       expect(w.toolPoint, equals(Point3D(10, 10, 4)));
-      w = Workpiece('G1 X10 Y 10 F100\nG91 G1 X1 Y1');
+      w = WorkSimulator('G1 X10 Y 10 F100\nG91 G1 X1 Y1');
       w.simulate();
       expect(w.toolPoint, equals(Point3D(11, 11, 4)));
-      w = Workpiece('G1 X10 Y 10 F100\nG91 G1 X1 Y1\nG90 G1 X0 Z-1.0');
+      w = WorkSimulator('G1 X10 Y 10 F100\nG91 G1 X1 Y1\nG90 G1 X0 Z-1.0');
       w.simulate();
       expect(w.toolPoint, equals(Point3D(0, 11, -1)));
     });
 
     test('G2', () {
-      var w = Workpiece('G1 Y10 F100\nG2 X10 Y0 I0 J-10');
+      var w = WorkSimulator('G1 Y10 F100\nG2 X10 Y0 I0 J-10');
       w.simulate();
       expect(w.toolPoint, equals(Point3D(10, 0, 4)));
       expect(w.box, equals(Rect(Point(0, 0), Point(10, 10))));
-      w = Workpiece('G1 Y-10 F100\nG2 X10 Y0 I0 J-10');
+      w = WorkSimulator('G1 Y-10 F100\nG2 X10 Y0 I0 J-10');
       expect(() => w.simulate(), throwsStateError); // center improperly defined
-      w = Workpiece('G1 Y-10 F100\nG2 X10 Y0 I0 J+10');
+      w = WorkSimulator('G1 Y-10 F100\nG2 X10 Y0 I0 J+10');
       w.simulate();
       expect(w.toolPoint, equals(Point3D(10, 0, 4)));
       expect(w.box, equals(Rect(Point(-10, -10), Point(10, 10))));
     });
 
     test('G3', () {
-      var w = Workpiece('G1 Y10 F100\nG3 X10 Y0 I0 J-10');
+      var w = WorkSimulator('G1 Y10 F100\nG3 X10 Y0 I0 J-10');
       w.simulate();
       expect(w.toolPoint, equals(Point3D(10, 0, 4)));
       expect(w.box, equals(Rect(Point(-10, -10), Point(10, 10))));
-      w = Workpiece('G1 Y-10 F100\nG3 X10 Y0 I0 J-10');
+      w = WorkSimulator('G1 Y-10 F100\nG3 X10 Y0 I0 J-10');
       expect(() => w.simulate(), throwsStateError); // center improperly defined
-      w = Workpiece('G1 Y-10 F100\nG3 X10 Y0 I0 J+10');
+      w = WorkSimulator('G1 Y-10 F100\nG3 X10 Y0 I0 J+10');
       w.simulate();
       expect(w.toolPoint, equals(Point3D(10, 0, 4)));
       expect(w.box, equals(Rect(Point(0, -10), Point(10, 0))));
@@ -99,7 +99,7 @@ void main() {
   group('Actual g-code', () {
 
     test('dp_side_right.nc - regular large cuts', () {
-      var w = Workpiece(File('test/dp_side_right.nc').readAsStringSync());
+      var w = WorkSimulator(File('test/dp_side_right.nc').readAsStringSync());
       w.simulate();
       expect(w.box, equals(Rect(Point(-301.375, -3.175), Point(301.375, 745.875))));
       expect(w.box, equals(w.physicalBox));
@@ -107,7 +107,7 @@ void main() {
     });
 
     test('slider_spacer_left_3ct_vertical_displaced.nc with displacement', () {
-      var w = Workpiece(File('test/slider_spacer_left_3ct_vertical_displaced.nc').readAsStringSync());
+      var w = WorkSimulator(File('test/slider_spacer_left_3ct_vertical_displaced.nc').readAsStringSync());
       w.simulate();
       expect(w.box, equals(Rect(Point(-3.175, -3.175), Point(532.175, 57))));
       expect(w.physicalBox, equals(Rect(Point(-3.175, -3.175), Point(532.175, 161.175))));
