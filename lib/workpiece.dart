@@ -124,6 +124,7 @@ class Workpiece {
       2: simG2,
       3: simG3,
       10: simG10,
+      17: simG17,
       20: simG20,
       21: simG21,
       90: simG90,
@@ -138,6 +139,7 @@ class Workpiece {
         throw ArgumentError('G-code G$gCommand is not supported');
       }
     }
+
   }
 
   // action code functions for simulating a specific code, eg G0
@@ -272,6 +274,8 @@ class Workpiece {
   void simG20(final Map<String, dynamic> lineDict) {
     metric = true;
   }
+
+  void simG17(final Map<String, dynamic> lineDict) {}
 
   void simG21(final Map<String, dynamic> lineDict) {
     metric = false;

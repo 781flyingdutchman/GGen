@@ -43,7 +43,7 @@ class Point {
       other is Point &&
           runtimeType == other.runtimeType &&
           almostEqual(x, other.x) &&
-          y == other.y;
+          almostEqual(y, other.y);
 
   @override
   int get hashCode => x.hashCode ^ y.hashCode;

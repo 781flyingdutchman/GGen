@@ -1,6 +1,7 @@
 import 'package:shaker/objects.dart';
 import 'package:shaker/workpiece.dart';
 import 'package:test/test.dart';
+import 'dart:io';
 
 void main() {
 
@@ -91,6 +92,27 @@ void main() {
       w.simulate();
       expect(w.toolPoint, equals(Point3D(10, 0, 4)));
       expect(w.box, equals(Rect(Point(0, -10), Point(10, 0))));
+    });
+
+  });
+
+  group('Actual g-code', () {
+
+    test('dp_side_right.nc - regular large cuts', () {
+      var w = Workpiece(File('test/dp_side_right.nc').readAsStringSync());
+      w.simulate();
+      expect(w.box, equals(Rect(Point(-301.375, -3.175), Point(301.375, 745.875))));
+      expect(w.box, equals(w.physicalBox));
+      expect(w.elapsedTime, equals(Duration(minutes: 46, seconds: 11, milliseconds: 982)));
+    });
+
+    test('slider_spacer_left_3ct_vertical_displaced.nc with displacement', () {
+      var w = Workpiece(File('test/slider_spacer_left_3ct_vertical_displaced.nc').readAsStringSync());
+      w.simulate();
+      expect(w.box, equals(Rect(Point(-3.175, -3.175), Point(532.175, 57))));
+      expect(w.physicalBox, equals(Rect(Point(-3.175, -3.175), Point(532.175, 161.175))));
+      print(w.box);
+      print(w.physicalBox);
     });
 
   });
