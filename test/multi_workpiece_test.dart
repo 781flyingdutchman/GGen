@@ -129,13 +129,13 @@ void main() {
       multi.add(WorkpiecePlacement(w, Placement.right,
           description: 'second workpiece'));
       multi.layout();
-      expect(multi.generateCode(), contains('G10 L20 P1 X-20.0 Y10.0'));
+      expect(multi.generateCode(), contains('G10 L20 P1 X-20.0000 Y10.0000'));
       expect(
           multi.generateCode(), contains('(Move origin for second workpiece)'));
       multi.add(WorkpiecePlacement(w, Placement.upAlignLeft,
           description: 'third workpiece'));
       multi.layout();
-      expect(multi.generateCode(), contains('G10 L20 P1 X40.0 Y-20.0'));
+      expect(multi.generateCode(), contains('G10 L20 P1 X40.0000 Y-20.0000'));
     });
 
     test('multiple placements, with G10 within each', () {
@@ -146,13 +146,13 @@ void main() {
       multi.add(WorkpiecePlacement(w, Placement.right,
           description: 'second workpiece'));
       multi.layout();
-      expect(multi.generateCode(), contains('G10 L20 P1 X-20.0 Y10.0'));
+      expect(multi.generateCode(), contains('G10 L20 P1 X-20.0000 Y10.0000'));
       expect(
           multi.generateCode(), contains('(Move origin for second workpiece)'));
       multi.add(WorkpiecePlacement(w, Placement.upAlignLeft,
           description: 'third workpiece'));
       multi.layout();
-      expect(multi.generateCode(), contains('G10 L20 P1 X40.0 Y-20.0'));
+      expect(multi.generateCode(), contains('G10 L20 P1 X40.0000 Y-20.0000'));
     });
 
     test('Actual workpiece', () {

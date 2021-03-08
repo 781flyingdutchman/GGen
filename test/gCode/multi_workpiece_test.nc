@@ -2,7 +2,7 @@
 (Part 1 placement Placement.initial)
 (Part 2 placement Placement.up)
 (Part 3 placement Placement.up)
-(Time: 2021-03-07 18:43:28.298878)
+(Time: 2021-03-07 20:39:50.485542)
 
 (begin preamble)
 G17 G90
@@ -121,7 +121,7 @@ G17 G90
 (end Part 1)
 
 (Move origin for Part 2)
-G10 L20 P1 X442.54678274254 Y-48.95321725746042
+G10 L20 P1 X442.5468 Y-48.9532
 
 (start Part 2)
 
@@ -239,7 +239,7 @@ G17 G90
 (end Part 2)
 
 (Move origin for Part 3)
-G10 L20 P1 X442.54678274254 Y-48.95321725746041
+G10 L20 P1 X442.5468 Y-48.9532
 
 (start Part 3)
 
@@ -356,6 +356,8 @@ G17 G90
 (Time to this point: 0:47:00.510000)
 (end Part 3)
 
+(Total workspace extends from (-3.175, -3.175) to (532.175, 189.175))
+(or a width of 535.350 mm and height 192.350 mm)
 
 (begin postamble)
 M5

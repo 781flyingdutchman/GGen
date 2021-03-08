@@ -159,8 +159,9 @@ class MultiWorkpiece {
       var translate = Point(machineBox.left - machineToolPoint.x,
           machineBox.bottom - machineToolPoint.y);
       if (translate != Point.zero() && wp != workpiecePlacements.first) {
-        gCode +=
-            '\n(Move origin for $description)\nG10 L20 P1 X${-translate.x} Y${-translate.y}'
+        gCode += '\n(Move origin for $description)\n'
+            'G10 L20 P1 X${(-translate.x).toStringAsFixed(4)} '
+            'Y${(-translate.y).toStringAsFixed(4)}'
             '\n\n(start $description)\n\n';
       }
       totalElapsedTime += wp.workSimulator.elapsedTime;
@@ -222,5 +223,16 @@ class MultiWorkGenerator extends WorkGenerator {
   }
 
   @override
-  void workpieceCode() => gCode.addAll(multiWorkpiece.generateCode().split('\n'));
+  void workpieceCode() =>
+      gCode.addAll(multiWorkpiece.generateCode().split('\n'));
+
+  @override
+  void postamble() {
+    var box = multiWorkpiece.encompassingBox();
+    gCode.addAll([
+      '(Total workspace extends from ${box.bl} to ${box.tr})',
+      '(or a width of ${box.width.toStringAsFixed(3)} mm and height ${box.height.toStringAsFixed(3)} mm)'
+    ]);
+    super.postamble();
+  }
 }

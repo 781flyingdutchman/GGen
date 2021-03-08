@@ -34,7 +34,7 @@ class Point {
 
   @override
   String toString() {
-    return '($x, $y)';
+    return '(${x.toStringAsFixed(3)}, ${y.toStringAsFixed(3)})';
   }
 
   @override
