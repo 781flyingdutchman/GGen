@@ -1,6 +1,6 @@
-import 'conversion.dart';
-import 'objects.dart';
-import 'work_generator.dart';
+import '../conversion.dart';
+import '../objects.dart';
+import '../work_generator.dart';
 
 /// Configuration parameters for the Panel
 class ShakerPanel {

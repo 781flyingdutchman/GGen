@@ -2,7 +2,8 @@ import 'dart:io';
 
 import 'package:args/args.dart';
 import 'package:args/command_runner.dart';
-import 'package:shaker/shaker_work.dart';
+import 'package:shaker/artifacts/shaker_work.dart';
+import 'package:shaker/commands/layout_command.dart';
 
 import '../conversion.dart';
 import '../objects.dart';
@@ -17,7 +18,8 @@ class Cli {
     exitCode = 0; // presume success;
 
     var runner = CommandRunner('ggen', 'Generate G-code.')
-      ..addCommand(ShakerCommand());
+      ..addCommand(ShakerCommand())
+      ..addCommand(LayoutCommand());
 
     runner.run(arguments).catchError((error) {
       if (error is! UsageException) throw error;
@@ -132,20 +134,24 @@ class Cli {
       panel.handleMidpoint = Point(handleOffsetX, handleOffsetY);
       if (handleOrientationLandscape != null) {
         if (panel.handleWidth == 0) {
-          throw ArgumentError('If handle orientation is given, also provide a handleWidth');
+          throw ArgumentError(
+              'If handle orientation is given, also provide a handleWidth');
         }
         panel.handleOrientationLandscape = handleOrientationLandscape;
-      }
-      else {
+      } else {
         if (panel.handleWidth > 0) {
-          throw ArgumentError('If handleWidth is given, also provide handleOrientation');
+          throw ArgumentError(
+              'If handleWidth is given, also provide handleOrientation');
         }
       }
-    }
-    else {
+    } else {
       // no handle
-      if (handleOffsetX != 0 || handleOffsetY != 0 || handleOrientationLandscape != null || panel.handleWidth > 0) {
-        throw ArgumentError('Specify --handle when providing handle related options');
+      if (handleOffsetX != 0 ||
+          handleOffsetY != 0 ||
+          handleOrientationLandscape != null ||
+          panel.handleWidth > 0) {
+        throw ArgumentError(
+            'Specify --handle when providing handle related options');
       }
       panel.handleMidpoint = null;
     }

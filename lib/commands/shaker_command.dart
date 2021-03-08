@@ -1,16 +1,16 @@
 import 'dart:io';
 
 import 'package:args/command_runner.dart';
-import 'package:shaker/work_generator.dart';
 
-import '../shaker_work.dart';
+import '../artifacts/shaker_work.dart';
 import 'cli.dart';
 
 class ShakerCommand extends Command {
   @override
   final name = 'shaker';
   @override
-  final description = 'Shaker style doors and drawer fronts';
+  final description = 'Shaker style doors and drawer fronts.\n'
+  'Usage: ggen shaker [options] [outputFile]';
 
   ShakerCommand() {
     argParser.addOption('width', help: 'Width of the panel');

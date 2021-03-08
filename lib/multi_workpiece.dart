@@ -182,6 +182,23 @@ class MultiWorkpiece {
 
     return gCode;
   }
+
+  /// Returns a unique name for [WorkpiecePlacement] description
+  ///
+  /// If the name is already in the list, a incrementing number is added
+  String uniqueNameFor(String description) {
+    var existing = workpiecePlacements.map((e) => e.fullDescription).toList();
+    if (!existing.contains(description)) {
+      return description;
+    }
+    var i = 2;
+    var newDescription = '$description #$i';
+    while (existing.contains(newDescription)) {
+      i++;
+      newDescription = '$description #$i';
+    }
+    return newDescription;
+  }
 }
 
 /// WorkGenerator for multiple workpieces
