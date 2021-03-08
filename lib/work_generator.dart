@@ -26,7 +26,7 @@ class Machine {
   double safeHeight = 5;
 
   // tool
-  double toolDiameter = 6.35;
+  double _toolDiameter = 6.35;
   double maxCutStepDepth = 5;
 
   double get toolRadius => toolDiameter / 2;
@@ -51,6 +51,11 @@ class Machine {
   double tabSpacing = 300;
 
   double get tabTopDepth => -materialThickness + tabHeight;
+  double get toolDiameter => _toolDiameter;
+  set toolDiameter(double d) {
+    _toolDiameter = d;
+    maxCutStepDepth = 0.8 * d;
+  }
 
   @override
   String toString() {

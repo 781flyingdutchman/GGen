@@ -131,7 +131,7 @@ class Cli {
     }
     // check handle values
     if (hasHandle) {
-      panel.handleMidpoint = Point(handleOffsetX, handleOffsetY);
+      panel.handleOffset = Point(handleOffsetX, handleOffsetY);
       if (handleOrientationLandscape != null) {
         if (panel.handleWidth == 0) {
           throw ArgumentError(
@@ -153,7 +153,7 @@ class Cli {
         throw ArgumentError(
             'Specify --handle when providing handle related options');
       }
-      panel.handleMidpoint = null;
+      panel.handleOffset = null;
     }
     // cleanup pocketDepth
     if (panel.pocketDepth > 0) {

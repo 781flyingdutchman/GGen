@@ -11,7 +11,7 @@ class ShakerPanel {
   double height = 150;
   double styleWidth = 2.inch;
   double pocketDepth = -4;
-  Point? handleMidpoint; // if null, no handle
+  Point? handleOffset; // if null, no handle
   bool? handleOrientationLandscape; // if null, single hole
   double handleWidth = 0;
 
@@ -25,7 +25,7 @@ class ShakerPanel {
 
   @override
   String toString() {
-    return 'ShakerPanel with width: $width, height: $height, styleWidth: $styleWidth, pocketDepth: $pocketDepth, handleMidpoint: $handleMidpoint, handleOrientationLandscape: $handleOrientationLandscape, handleWidth: $handleWidth';
+    return 'ShakerPanel with width: $width, height: $height, styleWidth: $styleWidth, pocketDepth: $pocketDepth, handleMidpoint: $handleOffset, handleOrientationLandscape: $handleOrientationLandscape, handleWidth: $handleWidth';
   }
 }
 
@@ -44,9 +44,11 @@ class ShakerWork extends WorkGenerator {
     var millRect = Rect(Point(offSet, offSet),
         Point(panel.width - offSet, panel.height - offSet));
     // add operations
-    final handleMidpoint = panel.handleMidpoint;
-    if (handleMidpoint != null) {
-      addHandleHoles(handleMidpoint,
+    final handleOffset = panel.handleOffset;
+    if (handleOffset != null) {
+      var handleMidPoint = Point(panelRect.center.x + handleOffset.x,
+          panelRect.center.y + handleOffset.y);
+      addHandleHoles(handleMidPoint,
           landscape: panel.handleOrientationLandscape, size: panel.handleWidth);
     }
     addRectCut(innerRect,

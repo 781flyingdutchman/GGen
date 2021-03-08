@@ -13,12 +13,11 @@ void main() {
 
   test('With handle', () {
     var panel = ShakerPanel();
-    panel.handleMidpoint = Point(50, 50);
+    panel.handleOffset = Point(50, 50);
     panel.handleOrientationLandscape = true;
     panel.handleWidth = 4.inch;
     var w = ShakerWork();
     w.generateCode();
-    print(w.gCodeAsString);
     print('No actual test comparisons for With handle');
   });
 }
