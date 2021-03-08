@@ -168,7 +168,7 @@ void errorInvalidUsage(String command, ArgParser parser) {
   exitCode = 2;
 }
 
-void exitWithError(String message) {
+void reportError(String message) {
   stdout.write(message);
   exitCode = 1;
 }

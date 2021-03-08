@@ -5,6 +5,8 @@ import 'package:path/path.dart' as p;
 import 'package:shaker/multi_workpiece.dart';
 import 'package:shaker/work_simulator.dart';
 
+import 'cli.dart';
+
 class LayoutCommand extends Command {
   final placements = {
     'l': Placement.left,
@@ -46,7 +48,7 @@ class LayoutCommand extends Command {
     if (results != null) {
       var arguments = List.from(results);
       if (arguments.length < 3) {
-        error('Layout requires at least two files');
+        reportError('Layout requires at least two files');
         return;
       }
       // substitute * for file names
@@ -86,7 +88,7 @@ class LayoutCommand extends Command {
                   description: multi.uniqueNameFor(p.split(fileName).last));
               multi.add(workpiecePlacement);
             } else {
-              error('Placement directive $placementString is not valid');
+              reportError('Placement directive $placementString is not valid');
               return;
             }
           } else {
@@ -115,13 +117,9 @@ class LayoutCommand extends Command {
           stdout.writeln(gCode);
         }
       } catch (e) {
-        error(e.toString());
+        reportError(e.toString());
       }
     }
   }
-
-  void error(String message) {
-    stderr.writeln(message);
-    exitCode = 1;
-  }
+  
 }
