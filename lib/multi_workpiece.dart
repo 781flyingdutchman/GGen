@@ -147,32 +147,34 @@ class MultiWorkpiece {
     }
     var gCode = '';
     var machineToolPoint = Point.zero(); // machine coordinates (fixed frame)
-    try {
-      workpiecePlacements.forEach((wp) {
-        var machineBox = wp.machineBox;
-        if (machineBox == null) {
-          throw StateError('MachineBox is null');
-        }
-        var translate = Point(machineBox.left - machineToolPoint.x,
-            machineBox.bottom - machineToolPoint.y);
-        if (translate != Point.zero()) {
-          var description = descriptionOf(wp);
-          gCode += '\n(Move origin for $description)\nG10 L20 P1 X${-translate.x} Y${-translate.y}'
-              '\n\n(start $description)\n\n';
-        }
-        gCode += wp.workSimulator.gCode + '\n\n(end ${descriptionOf(wp)})';
-        // recalculate machineToolPoint at the end of this work
-        // equal to original machineToolPoint + translation + physicalToolPoint
-        // as the latter is in workpiece coordinates, offset from the start
-        machineToolPoint = Point(
-            machineToolPoint.x + translate.x + wp.workSimulator.physicalToolPoint.x,
-            machineToolPoint.y + translate.y + wp.workSimulator.physicalToolPoint.y);
-      });
-    } catch (e, s) {
-      print(s);
-    }
+    workpiecePlacements.forEach((wp) {
+      var machineBox = wp.machineBox;
+      if (machineBox == null) {
+        throw StateError('MachineBox is null');
+      }
+      var translate = Point(machineBox.left - machineToolPoint.x,
+          machineBox.bottom - machineToolPoint.y);
+      if (translate != Point.zero() && wp != workpiecePlacements.first) {
+        var description = descriptionOf(wp);
+        gCode +=
+            '\n(Move origin for $description)\nG10 L20 P1 X${-translate.x} Y${-translate.y}'
+            '\n\n(start $description)\n\n';
+      }
+      gCode += wp.workSimulator.gCodeWithout('M2') + '\n\n(end ${descriptionOf(wp)})';
+      // recalculate machineToolPoint at the end of this work
+      // equal to original machineToolPoint + translation + physicalToolPoint
+      // as the latter is in workpiece coordinates, offset from the start
+      machineToolPoint = Point(
+          machineToolPoint.x +
+              translate.x +
+              wp.workSimulator.physicalToolPoint.x,
+          machineToolPoint.y +
+              translate.y +
+              wp.workSimulator.physicalToolPoint.y);
+    });
     return gCode;
   }
+
 
   String descriptionOf(WorkpiecePlacement wp) =>
       wp.description.isEmpty ? 'workpiece' : wp.description;

@@ -19,7 +19,15 @@ void main() {
 
     test('codeDict', () {
       var w = WorkSimulator('G0 X1\nM2\nG21 G90');
-      expect(w.gCodeDicts, equals([{'X': 1.0, 'G': 0}, {'M': 2}, {'G': 21}, {'G': 90}]));
+      expect(w.gCodeDicts, equals([{'line': 'G0 X1', 'X': 1.0, 'G': 0},
+        {'line': 'M2', 'M': 2},
+        {'line': 'G21', 'G': 21},
+        {'line': 'G90', 'G': 90}]));
+    });
+
+    test('gCodeWithout specific code, like M2', () {
+      var w = WorkSimulator('G0 X1 F150\nM2\n; M2\n(M2)\nM2 G17');
+      expect(w.gCodeWithout('M2'), equals('G0 X1 F150\n\n; M2\n(M2)\nG17\n'));
     });
 
     test('updateBoxes', () {
@@ -99,7 +107,7 @@ void main() {
   group('Actual g-code', () {
 
     test('dp_side_right.nc - regular large cuts', () {
-      var w = WorkSimulator(File('test/dp_side_right.nc').readAsStringSync());
+      var w = WorkSimulator(File('test/gCode/dp_side_right.nc').readAsStringSync());
       w.simulate();
       expect(w.box, equals(Rect(Point(-301.375, -3.175), Point(301.375, 745.875))));
       expect(w.box, equals(w.physicalBox));
@@ -107,12 +115,10 @@ void main() {
     });
 
     test('slider_spacer_left_3ct_vertical_displaced.nc with displacement', () {
-      var w = WorkSimulator(File('test/slider_spacer_left_3ct_vertical_displaced.nc').readAsStringSync());
+      var w = WorkSimulator(File('test/gCode/slider_spacer_left_3ct_vertical_displaced.nc').readAsStringSync());
       w.simulate();
       expect(w.box, equals(Rect(Point(-3.175, -3.175), Point(532.175, 57))));
       expect(w.physicalBox, equals(Rect(Point(-3.175, -3.175), Point(532.175, 161.175))));
-      print(w.box);
-      print(w.physicalBox);
     });
 
   });

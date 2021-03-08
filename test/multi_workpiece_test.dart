@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:shaker/multi_workpiece.dart';
 import 'package:shaker/objects.dart';
 import 'package:shaker/work_simulator.dart';
@@ -5,6 +7,7 @@ import 'package:test/test.dart';
 
 final testCode = 'G1 X10 Y10 F100';
 final testCodeTall =  'G1 X10 Y20 F100';
+final testCodeWithG10 = 'G1 X10 Y10 F100\nG10 L20 P1 Y0';
 
 void main() {
 
@@ -100,20 +103,43 @@ void main() {
       multi.add(WorkpiecePlacement(w, Placement.initial));
       expect(() => multi.generateCode(), throwsStateError); // no layout yet
       multi.layout();
-      expect(multi.generateCode(), equals(testCode));
+      expect(multi.generateCode(), contains(testCode));
     });
 
-    test('multi', () {
+    test('multiple placements, no G10 within each', () {
       var w = WorkSimulator(testCode);
       var multi = MultiWorkpiece();
       multi.add(WorkpiecePlacement(w, Placement.initial, description: 'first workpiece'));
       multi.add(WorkpiecePlacement(w, Placement.right, description: 'second workpiece'));
       multi.layout();
-      expect(multi.generateCode().contains('G10 L20 P1 X-20.0 Y10.0'), isTrue);
-      expect(multi.generateCode().contains('(Move origin for second workpiece)'), isTrue);
+      expect(multi.generateCode(), contains('G10 L20 P1 X-20.0 Y10.0'));
+      expect(multi.generateCode(), contains('(Move origin for second workpiece)'));
       multi.add(WorkpiecePlacement(w, Placement.upAlignLeft, description: 'third workpiece'));
       multi.layout();
-      expect(multi.generateCode().contains('G10 L20 P1 X40.0 Y-20.0'), isTrue);
+      expect(multi.generateCode(), contains('G10 L20 P1 X40.0 Y-20.0'));
+    });
+
+    test('multiple placements, with G10 within each', () {
+      var w = WorkSimulator(testCodeWithG10);
+      var multi = MultiWorkpiece();
+      multi.add(WorkpiecePlacement(w, Placement.initial, description: 'first workpiece'));
+      multi.add(WorkpiecePlacement(w, Placement.right, description: 'second workpiece'));
+      multi.layout();
+      expect(multi.generateCode(), contains('G10 L20 P1 X-20.0 Y10.0'));
+      expect(multi.generateCode(), contains('(Move origin for second workpiece)'));
+      multi.add(WorkpiecePlacement(w, Placement.upAlignLeft, description: 'third workpiece'));
+      multi.layout();
+      expect(multi.generateCode(), contains('G10 L20 P1 X40.0 Y-20.0'));
+    });
+
+    test('Actual workpiece', () {
+      var w = WorkSimulator(File('test/gCode/slider_spacer.nc').readAsStringSync());
+      var multi = MultiWorkpiece();
+      multi.add(WorkpiecePlacement(w, Placement.initial, description: 'Part 1'));
+      multi.add(WorkpiecePlacement(w, Placement.up, description: 'Part 2'));
+      multi.add(WorkpiecePlacement(w, Placement.up, description: 'Part 3'));
+      multi.layout();
+      print(multi.generateCode());
     });
 
   });

@@ -16,7 +16,7 @@ class WorkSimulator {
   final _parameters = ['X', 'Y', 'Z', 'I', 'J', 'F'];
   final _intParameters = ['G', 'M', 'L', 'P', 'T'];
 
-  // machine state variables
+  // Machine state variables
   Point3D toolPoint = Point3D(0, 0, 4);
   Point3D physicalToolPoint =
       Point3D(0, 0, 4); // does not respond to coord changes
@@ -27,6 +27,9 @@ class WorkSimulator {
   bool metric = true; // G21
   Duration elapsedTime = Duration(seconds: 0);
 
+  // Simulation state variables
+  bool _simulationComplete = false;
+
   WorkSimulator(this.gCode) {
     initMachine();
   }
@@ -34,6 +37,7 @@ class WorkSimulator {
   // Initialize all machine state variables
   void initMachine() {
     toolPoint = Point3D(0, 0, 4);
+    physicalToolPoint = Point3D(0, 0, 4);
     f = 0;
     absolute = true; // G90
     metric = true; // G21
@@ -56,12 +60,6 @@ class WorkSimulator {
 
   Iterable<Map<String, dynamic>> get gCodeDicts =>
       gCodeWithSplitGCommands.expand(codeDict);
-
-  /// Return the outline of this workpiece in its coordinates
-  Rect get outline {
-    var lines = gCodeLines.expand(withoutComments);
-    return Rect(Point(0, 0), Point(0, 0));
-  }
 
   /// Yields code line without comments
   Iterable<String> withoutComments(String line) sync* {
@@ -108,7 +106,41 @@ class WorkSimulator {
     yield lineDict;
   }
 
-  void simulate() => gCodeDicts.forEach(simulateLine);
+
+  /// Returns the gCode where a specific code is removed
+  ///
+  /// Used to remove, for instance, 'M2' from code.  Removal excludes
+  /// references to [codeToRemove] in comments
+  String gCodeWithout(String codeToRemove) {
+    var exp = RegExp(codeToRemove + r'\b');
+    var newCode = '';
+    gCode.split('\n').forEach((line) {
+      var newLine = line;
+      var lines = withoutComments(line).toList();
+      if (lines.isNotEmpty) {
+        line = lines.first;
+        var matches = exp.allMatches(line);
+        if (matches.isNotEmpty) {
+          newLine = '';
+          var i = 0;
+          matches.forEach((match) {
+            newLine += line.substring(i, match.start);
+            i = match.end;
+          });
+          newLine += line.substring(i); // final piece
+        }
+      }
+      newCode += '${newLine.trim()}\n';
+    });
+    return newCode;
+  }
+
+  void simulate() {
+    if (!_simulationComplete) {
+      gCodeDicts.forEach(simulateLine);
+      _simulationComplete = true;
+    }
+  }
 
   /// Simulate the tool movement for this line and update min/max values
   ///
@@ -272,14 +304,14 @@ class WorkSimulator {
   }
 
   void simG20(final Map<String, dynamic> lineDict) {
-    metric = true;
+    metric = false;
+    error('G20 (programming in inches) is not implemented. Use G21 and millimeters');
   }
 
   void simG17(final Map<String, dynamic> lineDict) {}
 
   void simG21(final Map<String, dynamic> lineDict) {
-    metric = false;
-    error('G21 (imperial system) is not implemented. Use metric G17');
+    metric = true;
   }
 
   void simG90(final Map<String, dynamic> lineDict) {
