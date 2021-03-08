@@ -1,13 +1,13 @@
 # GGen
 ### G-code generator and layout utility
 
-GGen generates G-code for use in CNC machines. It targets three-axis CNC machines,  
+GGen generates gCode for use in CNC machines. It targets three-axis CNC machines,  
 not 3D printers.
 
 #### Overview
 GGen currently supports two commands:  
 1. shaker - to create shaker style panels and drawer fronts
-2. layout - to layout multiple G-code files in as part of a larger job
+2. layout - to layout multiple gCode files in as part of a larger job
 
 #### shaker
 Use `ggen shaker` to create shaker style panels and drawer fronts.  
@@ -66,7 +66,7 @@ generates the same panel with two holes, 4" apart, to support a horizontal handl
 
 #### layout
 
-Use `ggen layout` to layout multiple gcode files on the work space while ensuring they  
+Use `ggen layout` to layout multiple gCode files on the work space while ensuring they  
 do not overlap.
 
     Layout multiple work pieces in one gCode file
@@ -85,15 +85,20 @@ do not overlap.
     instead of filename
 
 For example, to create 3 copies of a small drawer front and 2 copies of a large one  
-above it, use `ggen layout small.nc _ r _ r large.nc ul _ r`. This translates into:
-Layout the `small.nc` drawer front, another one to the right, another one to the right, then  
-move up and all the way left to place the `large.nc` drawer front and another to the right.  
+above it, use `ggen layout small.nc _ r _ r large.nc ul _ r`. This translates into:  
+
+1. Layout the `small.nc` drawer front (the `small.nc` argument)
+2. add another one to the right (the `_` indicates another `small.nc` and `r` means to the right)
+3. add another one to the right (same parameters)
+4. move up and all the way left to place the `large.nc` drawer front (`ul` means up and align left)
+5. add another to the right (the `_` and `r` parameters again)
+
 Add an output file as the last parameter to save the output.
 
 The layout uses the `G10 L20 P1` code to reset the machine's coordinate system, so  
 after the execution of the full work the machine origin will not be the same as it was  
 when it started.
 
-The output G-code contains useful information about estimated duration of each work piece, and
+The output gCode contains useful information about estimated duration of each work piece, and
 the bounds of the entire work.  Make sure the entire work fits on the machine, given its  
 starting point.
