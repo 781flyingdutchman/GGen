@@ -65,16 +65,22 @@ class Machine {
 
 /// Base class for the actual work generation
 ///
-/// Extends this class and override [generateCode]
+/// Extends this class and override [workpieceCode] to insert the
+/// actual workpiece gCode in the right spot.
 class WorkGenerator {
   final gCode = <String>[];
   Point toolPoint = Point(0, 0);
   double toolZ = 0;
 
   /// Generates the G-code
+  ///
+  /// Prior to calling, ensure that [Machine] is set up correctly, and that
+  /// any work-specific parameters used in [workpieceCode] are set.
+  /// A subclass *must* override [workpieceCode] and *may* override
+  /// [validateConfig], [header], [preamble] and [postamble],
+  /// ideally calling super.
   void generateCode() {
     validateConfig();
-    updateConfig();
     gCode.removeWhere((element) => true); // clear all
     header();
     preamble();
@@ -102,7 +108,7 @@ class WorkGenerator {
     ]);
   }
 
-  /// Insert a standard preamble
+  /// Insert the actual workpiece code
   void workpieceCode() {
     throw UnimplementedError('Subclass must override workpieceCode');
   }
@@ -411,13 +417,21 @@ class WorkGenerator {
     }
   }
 
+  /// Appends an argument and a value to the line
+  ///
+  /// The value is a double, represented with 4 decimal places
   String lineAddArgAndValue(String line, String argument, double value) {
     var valueAsString = value.toStringAsFixed(4);
     return '$line $argument$valueAsString'.trim();
   }
 
+  /// Appends comment using ';'
   String lineWithComment(String line, String comment) => '$line;  $comment';
 
+  /// Returns a comment in (comment) form
+  ///
+  /// If the comment is longer than 35 characters then multiple comment
+  /// lines will be returned, truncated at an appropriate point.
   String comment(String comment) {
     comment = comment.replaceAll(')', ']');
     comment = comment.replaceAll('(', '[');
@@ -489,9 +503,4 @@ class WorkGenerator {
     }
   }
 
-  /// Updates the configuration based on the configuration
-  ///
-  void updateConfig() {
-    // nothing yet
-  }
 }
