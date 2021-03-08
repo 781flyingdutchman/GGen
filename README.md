@@ -9,7 +9,7 @@ GGen currently supports two commands:
 1. shaker - to create shaker style panels and drawer fronts
 2. layout - to layout multiple G-code files in as part of a larger job
 
-##### shaker
+#### shaker
 Use `ggen shaker` to create shaker style panels and drawer fronts.  
  
     Shaker style doors and drawer fronts.
@@ -52,7 +52,7 @@ All values are in mm by default, but can be set using typical suffixes. For exam
     ggen shaker --width=14in --height=7in -p 2 -m 0.5in panel.nc
 
 generates a standard panel 14" by 7" with the middle recessed panel 2mm below the surface, cut  
-from 1/2" material, stored in panel.nc.  
+from 1/2" material, stored in `panel.nc`.  
 The G-Code will include 10mm high tabs to hold the panel, spaced 300mm apart. 
 
 If `--handle` is set you can provide an offset from the midpoint of the panel, and  
@@ -63,3 +63,37 @@ and `--handleWidth`.  For example:
     --handleWidth 4in panel.nc
    
 generates the same panel with two holes, 4" apart, to support a horizontal handle in the middle.
+
+#### layout
+
+Use `ggen layout` to layout multiple gcode files on the work space while ensuring they  
+do not overlap.
+
+    Layout multiple work pieces in one gCode file
+    Usage: ggen layout file [file placement]... [outputFile]
+    where placement sets placement relative to the previous workpiece:
+    r  - right
+    u  - up
+    l  - left
+    d  - down
+    ul - up and left-align with leftmost workpiece
+    ur - up and right-align with rightmost workpiece
+    dl - down and left-align with leftmost workpiece
+    dr - down and right-align with rightmost workpiece
+    
+    To place the same workpiece as the previous one, use underscore _
+    instead of filename
+
+For example, to create 3 copies of a small drawer front and 2 copies of a large one  
+above it, use `ggen layout small.nc _ r _ r large.nc ul _ r`. This translates into:
+Layout the `small.nc` drawer front, another one to the right, another one to the right, then  
+move up and all the way left to place the `large.nc` drawer front and another to the right.  
+Add an output file as the last parameter to save the output.
+
+The layout uses the `G10 L20 P1` code to reset the machine's coordinate system, so  
+after the execution of the full work the machine origin will not be the same as it was  
+when it started.
+
+The output G-code contains useful information about estimated duration of each work piece, and
+the bounds of the entire work.  Make sure the entire work fits on the machine, given its  
+starting point.
