@@ -1,5 +1,65 @@
-A sample command-line application with an entrypoint in `bin/`, library code
-in `lib/`, and example unit test in `test/`.
+# GGen
+### G-code generator and layout utility
 
-Created from templates made available by Stagehand under a BSD-style
-[license](https://github.com/dart-lang/stagehand/blob/master/LICENSE).
+GGen generates G-code for use in CNC machines. It targets three-axis CNC machines,  
+not 3D printers.
+
+#### Overview
+GGen currently supports two commands:  
+1. shaker - to create shaker style panels and drawer fronts
+2. layout - to layout multiple G-code files in as part of a larger job
+
+##### shaker
+Use `ggen shaker` to create shaker style panels and drawer fronts.  
+ 
+    Shaker style doors and drawer fronts.
+    Usage: ggen shaker [options] [outputFile]
+    
+    Usage: ggen shaker [arguments]
+    -h, --help                     Print this usage information.
+        --width                    Width of the panel
+        --height                   Height of the panel
+    -s, --styleWidth               Width of the styles
+                                   (defaults to "2in")
+    -p, --pocketDepth              Depth of middle pocket
+                                   (defaults to "4mm")
+        --[no-]handle              Drill hole(s) for handle
+    -x, --handleOffsetX            Handle X offset relative to center of panel
+                                   (defaults to "0")
+    -y, --handleOffsetY            Handle Y offset relative to center of panel
+                                   (defaults to "0")
+    -o, --handleOrientation        Handle orientation (if 2 holes)
+                                   [landscape, portrait]
+        --handleWidth              Distance between holes (if 2 holes)
+                                   (defaults to "0")
+        --clearanceHeight          ClearanceHeight (safe for in-workpiece moves)
+                                   (defaults to "1mm")
+        --safeHeight               SafeHeight (above everything)
+                                   (defaults to "4mm")
+    -d, --toolDiameter             Tool diameter
+                                   (defaults to "0.25in")
+    -f, --horizontalFeedCutting    Horizontal feed for cutting operation
+                                   (defaults to "500mm/min")
+        --horizontalFeedMilling    Horizontal feed for milling operation
+                                   (defaults to "900mm/min")
+    -v, --verticalFeed             Vertical feed
+                                   (defaults to "1mm/s")
+    -m, --materialThickness        Thickness of the material
+                                   (defaults to "0.75in")
+
+All values are in mm by default, but can be set using typical suffixes. For example:
+
+    ggen shaker --width=14in --height=7in -p 2 -m 0.5in panel.nc
+
+generates a standard panel 14" by 7" with the middle recessed panel 2mm below the surface, cut  
+from 1/2" material, stored in panel.nc.  
+The G-Code will include 10mm high tabs to hold the panel, spaced 300mm apart. 
+
+If `--handle` is set you can provide an offset from the midpoint of the panel, and  
+if the handle requires two holes (i.e. it is not a knob) then add `--handleOrientation`  
+and `--handleWidth`.  For example:  
+
+    ggen shaker --width=14in --height=7in -p 2 -m 0.5in --handle --handleOrientation landscape  
+    --handleWidth 4in panel.nc
+   
+generates the same panel with two holes, 4" apart, to support a horizontal handle in the middle.
