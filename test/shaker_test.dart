@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:shaker/objects.dart';
 import 'package:shaker/artifacts/shaker_work.dart';
 import 'package:test/test.dart';
@@ -8,7 +10,18 @@ void main() {
   test('No handle', () {
     var w = ShakerWork();
     w.generateCode();
-    print('No actual test comparisons for No handle');
+    var file = File('test/gCode/shaker_without_handle_test.nc');
+    // To reset test expectation (after verification!) uncomment next line once
+    // file.writeAsStringSync(w.gCodeAsString);
+    // remove all lines with reference to Time from the gCode
+    var gCode = w.gCodeAsString
+        .split('\n')
+        .where((line) => !line.contains('Time:'))
+        .join('\n');
+    var fileGCode = file.readAsStringSync().split('\n')
+        .where((line) => !line.contains('Time:'))
+        .join('\n');
+    expect(gCode, equals(fileGCode));
   });
 
   test('With handle', () {
@@ -18,6 +31,17 @@ void main() {
     panel.handleWidth = 4.inch;
     var w = ShakerWork();
     w.generateCode();
-    print('No actual test comparisons for With handle');
+    var file = File('test/gCode/shaker_with_handle_test.nc');
+    // To reset test expectation (after verification!) uncomment next line once
+    // file.writeAsStringSync(w.gCodeAsString);
+    // remove all lines with reference to Time from the gCode
+    var gCode = w.gCodeAsString
+        .split('\n')
+        .where((line) => !line.contains('Time:'))
+        .join('\n');
+    var fileGCode = file.readAsStringSync().split('\n')
+        .where((line) => !line.contains('Time:'))
+        .join('\n');
+    expect(gCode, equals(fileGCode));
   });
 }
