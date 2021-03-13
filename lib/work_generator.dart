@@ -191,8 +191,7 @@ class WorkGenerator {
     gCode.add(comment(description ?? 'Rectangle cut'));
     var offSet = insideCut ? -machine.toolRadius : machine.toolRadius;
     // cutRect is the outline adjusted for tool radius, using offSet
-    var cutRect = Rect(Point(outline.bl.x - offSet, outline.bl.y - offSet),
-        Point(outline.tr.x + offSet, outline.tr.y + offSet));
+    var cutRect = outline.grow(2 * offSet);
     // determine tabs
     var tabs = makeTabs ? tabPoints(cutRect) : {};
     // create move points - assumes you start at cutRect.bl

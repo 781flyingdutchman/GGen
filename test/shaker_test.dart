@@ -8,6 +8,7 @@ void main() {
   test('No handle', () {
     var w = ShakerWork();
     w.generateCode();
+    print(w.gCodeAsString);
     print('No actual test comparisons for No handle');
   });
 
