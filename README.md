@@ -4,6 +4,9 @@
 GGen generates gCode for use in CNC machines. It targets three-axis CNC machines,
 not 3D printers.
 
+#### Download
+Download the executable [here](https://github.com/781flyingdutchman/GGen/blob/master/bin/ggen.exe).
+
 #### Overview
 GGen currently supports two commands:  
 1. shaker - to create shaker style panels and drawer fronts
