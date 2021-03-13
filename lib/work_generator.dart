@@ -410,7 +410,6 @@ class WorkGenerator {
     gCode.add(comment(description ?? 'Handle'));
     if (landscape == null) {
       // single hole drill
-      addHole(depth: depth, feedRate: machine.verticalFeedDown);
       gCode.addAll([
         moveToSafeHeight(),
         rapidMoveToPoint(midPoint),
