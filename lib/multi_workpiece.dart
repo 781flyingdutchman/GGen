@@ -159,8 +159,9 @@ class MultiWorkpiece {
       var translate = Point(machineBox.left - machineToolPoint.x,
           machineBox.bottom - machineToolPoint.y);
       if (translate != Point.zero() && wp != workpiecePlacements.first) {
+        var switchToMetric = wp.workSimulator.metric ? '' : 'G21\n';
         gCode += '\n(Move origin for $description)\n'
-            'G10 L20 P1 X${(-translate.x).toStringAsFixed(4)} '
+            '${switchToMetric}G10 L20 P1 X${(-translate.x).toStringAsFixed(4)} '
             'Y${(-translate.y).toStringAsFixed(4)}'
             '\n\n(start $description)\n\n';
       }

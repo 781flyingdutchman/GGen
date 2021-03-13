@@ -8,6 +8,7 @@ import 'package:test/test.dart';
 final testCode = 'G1 X10 Y10 F100';
 final testCodeTall = 'G1 X10 Y20 F100';
 final testCodeWithG10 = 'G1 X10 Y10 F100\nG10 L20 P1 Y0';
+final testCodeWithG20 = 'G20 G1 X10 Y10 F100';
 
 void main() {
   group('layout', () {
@@ -153,6 +154,17 @@ void main() {
           description: 'third workpiece'));
       multi.layout();
       expect(multi.generateCode(), contains('G10 L20 P1 X40.0000 Y-20.0000'));
+    });
+
+    test('Multiple placements, with G20 (inches) within each', () {
+      var w = WorkSimulator(testCodeWithG20);
+      var multi = MultiWorkpiece();
+      multi.add(WorkpiecePlacement(w, Placement.initial,
+          description: 'first workpiece'));
+      multi.add(WorkpiecePlacement(w, Placement.right,
+          description: 'second workpiece'));
+      multi.layout();
+      expect(multi.generateCode(), contains('G21\nG10 L20 P1 X-20.0000 Y254.0000'));
     });
 
     test('Actual workpiece', () {
