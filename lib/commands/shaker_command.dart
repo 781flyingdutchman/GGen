@@ -46,6 +46,7 @@ class ShakerCommand extends Command {
         help: 'Handle orientation (if 2 holes)');
     argParser.addOption('handleWidth',
         help: 'Distance between holes (if 2 holes)', defaultsTo: '0');
+    argParser.addOption('handleHoleDepth', help: 'Depth of handle holes - defaults to cut-through');
     // machine related options for shaker
     argParser.addOption('clearanceHeight',
         help: 'ClearanceHeight (safe for in-workpiece moves)',

@@ -14,9 +14,21 @@ class ShakerPanel {
   Point? handleOffset; // if null, no handle
   bool? handleOrientationLandscape; // if null, single hole
   double handleWidth = 0;
+  double? handleHoleDepth; // if null, cut through
 
   factory ShakerPanel() {
     return _singleton;
+  }
+
+  void resetToDefaults() {
+    width = 300;
+    height = 150;
+    styleWidth = 2.inch;
+    pocketDepth = -4;
+    handleOffset = null; // if null, no handle
+    handleOrientationLandscape = null; // if null, single hole
+    handleWidth = 0;
+    handleHoleDepth = null; // if null, cut through
   }
 
   ShakerPanel._internal();
@@ -51,7 +63,7 @@ class ShakerWork extends WorkGenerator {
     if (handleOffset != null) {
       var handleMidPoint = Point(panelRect.center.x + handleOffset.x,
           panelRect.center.y + handleOffset.y);
-      addHandleHoles(handleMidPoint,
+      addHandleHoles(handleMidPoint, drillDepth: panel.handleHoleDepth,
           landscape: panel.handleOrientationLandscape, size: panel.handleWidth);
     }
     addRectCut(innerRect,

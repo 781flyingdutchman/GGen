@@ -95,7 +95,7 @@ class Cli {
 
         case 'pocketDepth':
         case 'p':
-          panel.pocketDepth = p.parseDistanceValue(value);
+          panel.pocketDepth = -(p.parseDistanceValue(value).abs());
           break;
 
         case 'handle':
@@ -119,6 +119,10 @@ class Cli {
         case 'handleOrientation':
         case 'o':
           handleOrientationLandscape = value == 'landscape';
+          break;
+          
+        case 'handleHoleDepth':
+          panel.handleHoleDepth = -(p.parseDistanceValue(value).abs());
           break;
 
         default:
@@ -154,10 +158,6 @@ class Cli {
             'Specify --handle when providing handle related options');
       }
       panel.handleOffset = null;
-    }
-    // cleanup pocketDepth
-    if (panel.pocketDepth > 0) {
-      panel.pocketDepth = -panel.pocketDepth;
     }
   }
 }
