@@ -32,7 +32,7 @@ class Point  {
 
   bool isSameVerticalAs(Point other) => almostEqual(x, other.x);
 
-  double distanceTo(Point p) => sqrt(pow(x - p.x, 2) + pow(y - p.y, 2));
+  double distanceTo(covariant Point p) => sqrt(pow(x - p.x, 2) + pow(y - p.y, 2));
 
   @override
   String toString() {
@@ -66,7 +66,8 @@ class Point3D extends Point {
   Point get point => Point(x, y); // without z
 
   /// Returns distance to another Point3D
-  double distanceTo3D(Point3D p) {
+  @override
+  double distanceTo(covariant Point3D p) {
     var dx = (p.x - x).abs();
     var dy = (p.y - y).abs();
     var dz = (p.z - z).abs();

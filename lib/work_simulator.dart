@@ -240,8 +240,8 @@ class WorkSimulator {
         : Point3D.add(toolPoint, parseXyz(lineDict));
     var center = parseIjk(lineDict, startValues: toolPoint);
     // do double center check
-    final r = center.distanceTo3D(toolPoint);
-    if (!almostEqual(r, center.distanceTo3D(to))) {
+    final r = center.distanceTo(toolPoint);
+    if (!almostEqual(r, center.distanceTo(to))) {
       error('Circle midpoint not defined correctly', lineDict: lineDict);
       return;
     }
@@ -329,7 +329,7 @@ class WorkSimulator {
     if (feedRate == 0) {
       throw StateError('Attempting move with feed rate 0');
     }
-    var distance = toolPoint.distanceTo3D(to);
+    var distance = toolPoint.distanceTo(to);
     elapsedTime += timeToMove(distance, feedRate);
     var movement = Point3D.subtract(to, toolPoint);
     physicalToolPoint = Point3D.add(physicalToolPoint, movement);
