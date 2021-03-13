@@ -35,6 +35,7 @@ Use `ggen shaker` to create shaker style panels and drawer fronts.
                                    [landscape, portrait]
         --handleWidth              Distance between holes (if 2 holes)
                                    (defaults to "0")
+        --handleHoleDepth          Depth of handle holes - defaults to cut-through
         --clearanceHeight          ClearanceHeight (safe for in-workpiece moves)
                                    (defaults to "1mm")
         --safeHeight               SafeHeight (above everything)
