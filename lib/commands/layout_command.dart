@@ -26,6 +26,7 @@ class LayoutCommand extends Command {
   final description = [
     'Layout multiple work pieces in one gCode file',
     'Usage: ggen layout file [file placement]... [outputFile]',
+    '',
     'where placement sets placement relative to the previous workpiece:',
     'r  - right',
     'u  - up',
@@ -37,7 +38,14 @@ class LayoutCommand extends Command {
     'dr - down and right-align with rightmost workpiece',
     '',
     'To place the same workpiece as the previous one, use underscore _',
-    'instead of filename'
+    'instead of filename',
+    '',
+    'For example, to create 3 copies of a small drawer front and 2 copies',
+    'of a large one above it, use:',
+    '',
+    '    ggen layout small.nc _ r _ r large.nc ul _ r',
+    '',
+    'where small.nc and large.nc are example filenames'
   ].join('\n');
 
   LayoutCommand();

@@ -7,14 +7,14 @@ not 3D printers.
 #### Overview
 GGen currently supports two commands:  
 1. shaker - to create shaker style panels and drawer fronts
-2. layout - to layout multiple gCode files in as part of a larger job
+2. layout - to layout multiple gCode files as part of a larger job
 
 #### shaker
 Use `ggen shaker` to create shaker style panels and drawer fronts.  
- 
+
     Shaker style doors and drawer fronts.
     Usage: ggen shaker [options] [outputFile]
-    
+
     Usage: ggen shaker [arguments]
     -h, --help                     Print this usage information.
         --width                    Width of the panel
@@ -53,7 +53,8 @@ All values are in mm by default, but can be set using typical suffixes. For exam
 
 generates a standard panel 14" by 7" with the middle recessed panel 2mm below the surface, cut  
 from 1/2" material, stored in `panel.nc`.  
-The G-Code will include 10mm high tabs to hold the panel, spaced 300mm apart.
+The G-Code will include 10mm high tabs to hold the panel, spaced 300mm apart, and
+the origin (0, 0) is at the bottom left of the panel.
 
 If `--handle` is set you can provide an offset from the midpoint of the panel, and
 if the handle requires two holes (i.e. it is not a knob) then add `--handleOrientation`
@@ -61,7 +62,7 @@ and `--handleWidth`.  For example:
 
     ggen shaker --width=14in --height=7in -p 2 -m 0.5in --handle --handleOrientation landscape  
     --handleWidth 4in panel.nc
-   
+
 generates the same panel with two holes, 4" apart, to support a horizontal handle in the middle.
 
 #### layout
@@ -80,7 +81,7 @@ do not overlap.
     ur - up and right-align with rightmost workpiece
     dl - down and left-align with leftmost workpiece
     dr - down and right-align with rightmost workpiece
-    
+
     To place the same workpiece as the previous one, use underscore _
     instead of filename
 
