@@ -1,12 +1,11 @@
 import 'dart:math';
 
 /// Basic Dart objects
-///
 
 /// Equals test for double values, to avoid rounding issues with ==
 bool almostEqual(double a, double b) => (a - b).abs() < 0.01;
 
-class Point {
+class Point  {
   final double x, y;
 
   Point(this.x, this.y);
@@ -14,6 +13,9 @@ class Point {
   Point.zero()
       : x = 0,
         y = 0;
+
+  Point.add(Point a, Point b) : x = a.x + b.x, y = a.y + b.y;
+  Point.subtract(Point a, Point b) : x = a.x - b.x, y = a.y - b.y;
 
   bool toRightOf(Point p) => x > p.x;
 
@@ -58,6 +60,9 @@ class Point3D extends Point {
       : z = 0,
         super(0, 0);
 
+  Point3D.add(Point3D a, Point3D b) : z = a.z + b.z, super(a.x + b.x, a.y + b.y);
+  Point3D.subtract(Point3D a, Point3D b) : z = a.z - b.z, super(a.x - b.x, a.y - b.y);
+
   Point get point => Point(x, y); // without z
 
   /// Returns distance to another Point3D
@@ -67,10 +72,6 @@ class Point3D extends Point {
     var dz = (p.z - z).abs();
     return sqrt(dx * dx + dy * dy + dz * dz);
   }
-
-  Point3D operator +(Point3D p) => Point3D(x + p.x, y + p.y, z + p.z);
-
-  Point3D operator -(Point3D p) => Point3D(x - p.x, y - p.y, z - p.z);
 
   @override
   String toString() {

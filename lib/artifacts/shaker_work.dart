@@ -25,7 +25,10 @@ class ShakerPanel {
 
   @override
   String toString() {
-    return 'ShakerPanel with width: $width, height: $height, styleWidth: $styleWidth, pocketDepth: $pocketDepth, handleMidpoint: $handleOffset, handleOrientationLandscape: $handleOrientationLandscape, handleWidth: $handleWidth';
+    return 'ShakerPanel with width: $width, height: $height, '
+        'styleWidth: $styleWidth, pocketDepth: $pocketDepth, '
+        'handleOffset: $handleOffset, handleOrientationLandscape: '
+        '$handleOrientationLandscape, handleWidth: $handleWidth';
   }
 }
 

@@ -216,7 +216,7 @@ class WorkSimulator {
   void simG0(final Map<String, dynamic> lineDict) {
     var to = absolute
         ? parseXyz(lineDict, startValues: toolPoint)
-        : toolPoint + parseXyz(lineDict);
+        : Point3D.add(toolPoint, parseXyz(lineDict));
     if (toolPoint.z <= 0 || to.z <= 0) {
       warning('G0 with tool inside material', lineDict: lineDict);
     }
@@ -226,7 +226,7 @@ class WorkSimulator {
   void simG1(final Map<String, dynamic> lineDict) {
     var to = absolute
         ? parseXyz(lineDict, startValues: toolPoint)
-        : toolPoint + parseXyz(lineDict);
+        : Point3D.add(toolPoint, parseXyz(lineDict));
     parseAndSetF(lineDict);
     if (f == 0) {
       ArgumentError('Attempting to use G1 with F equal to 0');
@@ -237,7 +237,7 @@ class WorkSimulator {
   void simG2_3(final Map<String, dynamic> lineDict, {required bool clockWise}) {
     var to = absolute
         ? parseXyz(lineDict, startValues: toolPoint)
-        : toolPoint + parseXyz(lineDict);
+        : Point3D.add(toolPoint, parseXyz(lineDict));
     var center = parseIjk(lineDict, startValues: toolPoint);
     // do double center check
     final r = center.distanceTo3D(toolPoint);
@@ -299,7 +299,7 @@ class WorkSimulator {
     // set toolPoint without actual movement
     toolPoint = absolute
         ? parseXyz(lineDict, startValues: toolPoint)
-        : toolPoint + parseXyz(lineDict);
+        : Point3D.add(toolPoint, parseXyz(lineDict));
     updateBoxes();
   }
 
@@ -331,8 +331,8 @@ class WorkSimulator {
     }
     var distance = toolPoint.distanceTo3D(to);
     elapsedTime += timeToMove(distance, feedRate);
-    var movement = to - toolPoint;
-    physicalToolPoint += movement;
+    var movement = Point3D.subtract(to, toolPoint);
+    physicalToolPoint = Point3D.add(physicalToolPoint, movement);
     toolPoint = to;
     updateBoxes();
   }

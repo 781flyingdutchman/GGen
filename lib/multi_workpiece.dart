@@ -172,13 +172,8 @@ class MultiWorkpiece {
       // recalculate machineToolPoint at the end of this work
       // equal to original machineToolPoint + translation + physicalToolPoint
       // as the latter is in workpiece coordinates, offset from the start
-      machineToolPoint = Point(
-          machineToolPoint.x +
-              translate.x +
-              wp.workSimulator.physicalToolPoint.x,
-          machineToolPoint.y +
-              translate.y +
-              wp.workSimulator.physicalToolPoint.y);
+      machineToolPoint = Point.add(Point.add(machineToolPoint, translate),
+          wp.workSimulator.physicalToolPoint);
     });
 
     return gCode;
