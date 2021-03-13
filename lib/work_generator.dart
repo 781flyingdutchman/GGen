@@ -27,7 +27,7 @@ class Machine {
 
   // tool
   double _toolDiameter = 6.35;
-  double maxCutStepDepth = 5;
+  double maxCutStepDepth = 0.9 * 6.35;
 
   double get toolRadius => toolDiameter / 2;
 
@@ -56,7 +56,7 @@ class Machine {
 
   set toolDiameter(double d) {
     _toolDiameter = d;
-    maxCutStepDepth = 0.8 * d;
+    maxCutStepDepth = 0.9 * d;
   }
 
   @override
