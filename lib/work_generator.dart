@@ -312,8 +312,7 @@ class WorkGenerator {
     gCode.add(comment(description ?? 'Mill rectangle'));
     final offSet = -machine.toolRadius; // inside cut
     // cutRect is the outline adjusted for tool radius, using offSet
-    var cutRect = Rect(Point(outline.bl.x - offSet, outline.bl.y - offSet),
-        Point(outline.tr.x + offSet, outline.tr.y + offSet));
+    var cutRect = outline.grow(2 * offSet);
     final spacing = machine.toolRadius * machine.millOverlap;
     var points = cutRect.isLandscape
         ? Line(cutRect.bl, cutRect.tl).points(spacing: spacing)
