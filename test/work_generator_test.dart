@@ -14,7 +14,8 @@ void main() {
           equals('(test a very long line with)\n'
               '(different characters over 35 in)\n'
               '(length)'));
-      expect(w.comment('averylonglinewithoutspacvesgoingover25inlneght'),
+      expect(
+          w.comment('averylonglinewithoutspacvesgoingover25inlneght'),
           equals('(averylonglinewithoutspacvesgoingov)\n'
               '(er25inlneght)'));
       expect(w.comment('c(ommentWith)'), equals('(c[ommentWith])'));
@@ -71,8 +72,7 @@ void main() {
       expect(numTabs, 8);
       w = WorkGenerator();
       rect = Rect(Point(0, 0), Point(100, 100));
-      w.addRectCut(rect,
-          cutDepth: -5, makeTabs: true); // shallow, no tabs
+      w.addRectCut(rect, cutDepth: -5, makeTabs: true); // shallow, no tabs
       numTabs =
           w.gCode.where((element) => element.contains('tab')).toList().length;
       expect(numTabs, 0);
@@ -150,6 +150,29 @@ void main() {
       w.addRectMill(rect); // no millDepth means cut through
       var sortedZs = sortedValuesFor('Z', w);
       expect(sortedZs, equals([-21.5, -20.0, -15.0, -10.0, -5.0, 1.0, 5.0]));
+    });
+  });
+
+  group('addHole', () {
+    test('Add shallow hole', () {
+      var w = WorkGenerator();
+      w.addHole(depth: -3, feedRate: 100);
+      expect(w.gCode, equals(['G1 Z-3.0000 F100.0000', 'G0 Z1.0000']));
+    });
+
+    test('Add deep hole', () {
+      var w = WorkGenerator();
+      w.addHole(depth: -14, feedRate: 100);
+      expect(
+          w.gCode,
+          equals([
+            'G1 Z-5.0000 F100.0000',
+            'G0 Z1.0000',
+            'G1 Z-10.0000 F100.0000',
+            'G0 Z1.0000',
+            'G1 Z-14.0000 F100.0000',
+            'G0 Z1.0000'
+          ]));
     });
   });
 

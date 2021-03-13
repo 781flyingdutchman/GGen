@@ -51,7 +51,9 @@ class Machine {
   double tabSpacing = 300;
 
   double get tabTopDepth => -materialThickness + tabHeight;
+
   double get toolDiameter => _toolDiameter;
+
   set toolDiameter(double d) {
     _toolDiameter = d;
     maxCutStepDepth = 0.8 * d;
@@ -363,6 +365,32 @@ class WorkGenerator {
         lineWithComment(moveToClearanceHeight(), 'Milling operation done'));
   }
 
+  /// Creates hole at current position, using vertical feed
+  ///
+  /// Does not generate a canned drill mode like G81, but
+  /// simulates that effect
+  ///
+  /// [depth] must be negative
+  /// [feedRate] is feed rate
+  ///
+  /// If hole is deeper than [maxCutStepDepth] then the drilling will
+  /// peck and retract to [clearanceHeight], then plunges again
+  void addHole({required double depth, required double feedRate}) {
+    if (depth > 0) throw StateError('Depth must be < 0');
+    final machine = Machine();
+    if (toolZ > machine.clearanceHeight) {
+      gCode.add(moveToClearanceHeight());
+    }
+    var holeDepth = toolZ; // need to hold separately due to retract
+    while (holeDepth > depth) {
+      var targetZ = max(depth,
+          min(holeDepth - machine.maxCutStepDepth, -machine.maxCutStepDepth));
+      gCode.addAll(
+          [linearMove(z: targetZ, f: feedRate), moveToClearanceHeight()]);
+      holeDepth = targetZ;
+    }
+  }
+
   /// Add holes for a handle
   ///
   /// [midPoint] is the midPoint of the handle
@@ -382,13 +410,12 @@ class WorkGenerator {
     gCode.add(comment(description ?? 'Handle'));
     if (landscape == null) {
       // single hole drill
+      addHole(depth: depth, feedRate: machine.verticalFeedDown);
       gCode.addAll([
         moveToSafeHeight(),
         rapidMoveToPoint(midPoint),
-        moveToClearanceHeight(),
-        linearMove(z: depth, f: machine.verticalFeedDown),
-        moveToClearanceHeight()
       ]);
+      addHole(depth: depth, feedRate: machine.verticalFeedDown);
     } else {
       // two-hole drill
       if (size == null) {
@@ -405,13 +432,10 @@ class WorkGenerator {
       gCode.addAll([
         moveToSafeHeight(),
         rapidMoveToPoint(p1),
-        moveToClearanceHeight(),
-        linearMove(z: depth, f: machine.verticalFeedDown),
-        moveToClearanceHeight(),
-        rapidMoveToPoint(p2),
-        linearMove(z: depth, f: machine.verticalFeedDown),
-        moveToClearanceHeight()
       ]);
+      addHole(depth: depth, feedRate: machine.verticalFeedDown);
+      gCode.add(rapidMoveToPoint(p2));
+      addHole(depth: depth, feedRate: machine.verticalFeedDown);
     }
   }
 
@@ -444,14 +468,13 @@ class WorkGenerator {
           }
           i--;
         }
-        if (i==0) {
+        if (i == 0) {
           i = 34; // if no spaces found
         }
         output.add('(${line.substring(0, i)})');
-        if (line.substring(i, i+1) == ' ') {
+        if (line.substring(i, i + 1) == ' ') {
           line = line.substring(i + 1);
-        }
-        else {
+        } else {
           line = line.substring(i);
         }
       }
@@ -479,8 +502,7 @@ class WorkGenerator {
       // Make sure there is at least one tab
       if (rect.isLandscape) {
         numHorTabs = 1;
-      }
-      else {
+      } else {
         numVerTabs = 1;
       }
     }
@@ -509,5 +531,4 @@ class WorkGenerator {
       throw StateError('SafeHeight and ClearanceHeight must be >= 1 mm');
     }
   }
-
 }
