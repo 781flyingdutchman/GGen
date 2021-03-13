@@ -64,9 +64,15 @@ void main() {
           w.gCode.where((element) => element.contains('tab')).toList().length;
       expect(numTabs, 24);
       w = WorkGenerator();
-      rect = Rect(Point(0, 0), Point(100, 100)); //  no tabs on either
+      rect = Rect(Point(0, 0), Point(110, 100)); //  small, triggers min # tabs
+      w.addRectCut(rect, makeTabs: true);
+      numTabs =
+          w.gCode.where((element) => element.contains('tab')).toList().length;
+      expect(numTabs, 8);
+      w = WorkGenerator();
+      rect = Rect(Point(0, 0), Point(100, 100));
       w.addRectCut(rect,
-          cutDepth: -10, makeTabs: true); // shallow, only one tab
+          cutDepth: -5, makeTabs: true); // shallow, no tabs
       numTabs =
           w.gCode.where((element) => element.contains('tab')).toList().length;
       expect(numTabs, 0);

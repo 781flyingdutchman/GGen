@@ -473,17 +473,26 @@ class WorkGenerator {
   Map<String, List<double>> tabPoints(Rect rect) {
     var result = <String, List<double>>{};
     var machine = Machine();
+    var numHorTabs = (rect.width / machine.tabSpacing).floor();
+    var numVerTabs = (rect.height / machine.tabSpacing).floor();
+    if (numHorTabs == 0 && numVerTabs == 0) {
+      // Make sure there is at least one tab
+      if (rect.isLandscape) {
+        numHorTabs = 1;
+      }
+      else {
+        numVerTabs = 1;
+      }
+    }
     // horizontal
-    var numTabs = (rect.width / machine.tabSpacing).floor();
-    if (numTabs > 0) {
-      var dist = rect.width / (numTabs + 1);
-      result['H'] = List.generate(numTabs, (index) => (index + 1) * dist);
+    if (numHorTabs > 0) {
+      var dist = rect.width / (numHorTabs + 1);
+      result['H'] = List.generate(numHorTabs, (index) => (index + 1) * dist);
     }
     // vertical
-    numTabs = (rect.height / machine.tabSpacing).floor();
-    if (numTabs > 0) {
-      var dist = rect.height / (numTabs + 1);
-      result['V'] = List.generate(numTabs, (index) => (index + 1) * dist);
+    if (numVerTabs > 0) {
+      var dist = rect.height / (numVerTabs + 1);
+      result['V'] = List.generate(numVerTabs, (index) => (index + 1) * dist);
     }
     return result;
   }
