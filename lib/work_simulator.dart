@@ -42,6 +42,7 @@ class WorkSimulator {
     absolute = true; // G90
     metric = true; // G21
     elapsedTime = Duration(seconds: 0);
+    _simulationComplete = false;
   }
 
   // Getters build on each other:
@@ -156,7 +157,7 @@ class WorkSimulator {
       2: simG2,
       3: simG3,
       10: simG10,
-      17: simG17,
+      17: simNoOp,
       20: simG20,
       21: simG21,
       90: simG90,
@@ -181,14 +182,16 @@ class WorkSimulator {
   /// Missing parameters are 0, unless [startValues] are given
   /// The caller must determine whether to interpret XYZ as an absolute or a
   /// relative value.
+  /// If not in [metric] mode, values are converted from inches to mm
   Point3D parseXyz(final Map<String, dynamic> lineDict,
       {Point3D? startValues}) {
     var x = startValues?.x ?? 0.0;
     var y = startValues?.y ?? 0.0;
     var z = startValues?.z ?? 0.0;
-    if (lineDict.containsKey('X')) x = lineDict['X']!;
-    if (lineDict.containsKey('Y')) y = lineDict['Y']!;
-    if (lineDict.containsKey('Z')) z = lineDict['Z']!;
+    var multiplier = metric ? 1 : 1.inch;
+    if (lineDict.containsKey('X')) x = lineDict['X']! * multiplier;
+    if (lineDict.containsKey('Y')) y = lineDict['Y']! * multiplier;
+    if (lineDict.containsKey('Z')) z = lineDict['Z']! * multiplier;
     return Point3D(x, y, z);
   }
 
@@ -198,19 +201,31 @@ class WorkSimulator {
   /// Missing parameters are 0, unless [startValues] are given
   /// IJK are always interpreted as relative to the start value
   /// and the returned point is the absolute center point
+  /// If not in [metric] mode, values are converted from inches to mm
   Point3D parseIjk(final Map<String, dynamic> lineDict,
       {required Point3D startValues}) {
     var i = startValues.x;
     var j = startValues.y;
     var k = startValues.z;
-    if (lineDict.containsKey('I')) i += lineDict['I']!;
-    if (lineDict.containsKey('J')) j += lineDict['J']!;
-    if (lineDict.containsKey('K')) k += lineDict['K']!;
+    var multiplier = metric ? 1 : 1.inch;
+    if (lineDict.containsKey('I')) i += lineDict['I']! * multiplier;
+    if (lineDict.containsKey('J')) j += lineDict['J']! * multiplier;
+    if (lineDict.containsKey('K')) k += lineDict['K']! * multiplier;
     return Point3D(i, j, k);
   }
 
+  /// Parses the feed rate and sets this in field [f] so it persists
+  /// until changed.
+  ///
+  /// If not in [metric] mode, rate is converted from inches/min to mm/min
   void parseAndSetF(final Map<String, dynamic> lineDict) {
-    if (lineDict.containsKey('F')) f = lineDict['F']!;
+    if (lineDict.containsKey('F')) {
+      var feedRate = lineDict['F']! as double;
+      if (!metric) {
+        feedRate = feedRate.ipm;
+      }
+      f = feedRate;
+    };
   }
 
   void simG0(final Map<String, dynamic> lineDict) {
@@ -303,24 +318,13 @@ class WorkSimulator {
     updateBoxes();
   }
 
-  void simG20(final Map<String, dynamic> lineDict) {
-    metric = false;
-    error('G20 (programming in inches) is not implemented. Use G21 and millimeters');
-  }
+  void simG20(final Map<String, dynamic> lineDict) => metric = false;
 
-  void simG17(final Map<String, dynamic> lineDict) {}
+  void simG21(final Map<String, dynamic> lineDict) => metric = true;
 
-  void simG21(final Map<String, dynamic> lineDict) {
-    metric = true;
-  }
+  void simG90(final Map<String, dynamic> lineDict) => absolute = true;
 
-  void simG90(final Map<String, dynamic> lineDict) {
-    absolute = true;
-  }
-
-  void simG91(final Map<String, dynamic> lineDict) {
-    absolute = false;
-  }
+  void simG91(final Map<String, dynamic> lineDict) => absolute = false;
 
   void simNoOp(final Map<String, dynamic> lineDict) => null;
 
@@ -362,6 +366,7 @@ class WorkSimulator {
   Duration timeToMove(double distance, double feedRate) =>
       Duration(milliseconds: (distance / feedRate * 60000).toInt());
 
+  /// Log a warning, potentially with reference to the gcode line
   void warning(String message, {final Map<String, dynamic>? lineDict}) {
     if (lineDict != null) {
       message += ' in line ${lineDict['line']}';
@@ -369,6 +374,7 @@ class WorkSimulator {
     log.warning(message);
   }
 
+  /// Throw a StateError, potentially with reference to the gcode line
   void error(String message, {final Map<String, dynamic>? lineDict}) {
     if (lineDict != null) {
       message += ' in line ${lineDict['line']}';

@@ -2,6 +2,7 @@ import 'package:shaker/objects.dart';
 import 'package:shaker/work_simulator.dart';
 import 'package:test/test.dart';
 import 'dart:io';
+import 'package:shaker/conversion.dart';
 
 void main() {
 
@@ -100,6 +101,19 @@ void main() {
       w.simulate();
       expect(w.toolPoint, equals(Point3D(10, 0, 4)));
       expect(w.box, equals(Rect(Point(0, -10), Point(10, 0))));
+    });
+
+    test('G20 - programming in inches', () {
+      var w = WorkSimulator('G20\nG0 X10 Y 10');
+      w.simulate();
+      expect(w.toolPoint, equals(Point3D(10.inch, 10.inch, 4)));
+      w = WorkSimulator('G20 G1 X10 Y 10 F100');
+      w.simulate();
+      expect(w.toolPoint, equals(Point3D(10.inch, 10.inch, 4)));
+      w = WorkSimulator('G20 G1 Y10 F100\nG2 X10 Y0 I0 J-10');
+      w.simulate();
+      expect(w.toolPoint, equals(Point3D(10.inch, 0, 4)));
+      expect(w.box, equals(Rect(Point(0, 0), Point(10.inch, 10.inch))));
     });
 
   });
