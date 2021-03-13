@@ -335,8 +335,8 @@ class WorkSimulator {
     }
     var distance = toolPoint.distanceTo(to);
     elapsedTime += timeToMove(distance, feedRate);
-    var movement = Point3D.subtract(to, toolPoint);
-    physicalToolPoint = physicalToolPoint + movement;
+    var movement = to - toolPoint;
+    physicalToolPoint += movement;
     toolPoint = to;
     updateBoxes();
   }

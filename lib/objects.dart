@@ -14,9 +14,6 @@ class Point  {
       : x = 0,
         y = 0;
 
-  // Point.add(Point a, Point b) : x = a.x + b.x, y = a.y + b.y;
-  Point.subtract(Point a, Point b) : x = a.x - b.x, y = a.y - b.y;
-
   bool toRightOf(Point p) => x > p.x;
 
   bool toLeftOf(Point p) => x < p.x;
@@ -25,16 +22,14 @@ class Point  {
 
   bool above(Point p) => y > p.y;
 
-  // bool isSameAs(Point other) =>
-  //     (x - other.x).abs() < precision && (y - other.y).abs() < precision;
-
   bool isSameHorizontalAs(Point other) => almostEqual(y, other.y);
 
   bool isSameVerticalAs(Point other) => almostEqual(x, other.x);
 
   double distanceTo(covariant Point p) => sqrt(pow(x - p.x, 2) + pow(y - p.y, 2));
 
-  Point operator +(Point p) => Point(x + p.x, y + p.y);
+  Point operator -(covariant Point p) => Point(x - p.x, y - p.y);
+  Point operator +(covariant Point p) => Point(x + p.x, y + p.y);
 
   @override
   String toString() {
@@ -62,9 +57,6 @@ class Point3D extends Point {
       : z = 0,
         super(0, 0);
 
-  // Point3D.add(Point3D a, Point3D b) : z = a.z + b.z, super(a.x + b.x, a.y + b.y);
-  Point3D.subtract(Point3D a, Point3D b) : z = a.z - b.z, super(a.x - b.x, a.y - b.y);
-
   Point get point => Point(x, y); // without z
 
   /// Returns distance to another Point3D
@@ -77,7 +69,10 @@ class Point3D extends Point {
   }
 
   @override
-  Point3D operator +(covariant Point3D p) => Point3D(x + p.x, y + p.y, z + p.z);
+  Point3D operator +(Point3D p) => Point3D(x + p.x, y + p.y, z + p.z);
+
+  @override
+  Point3D operator -(Point3D p) => Point3D(x - p.x, y - p.y, z - p.z);
 
   @override
   String toString() {
