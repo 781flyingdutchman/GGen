@@ -315,7 +315,7 @@ class WorkGenerator {
     final offSet = -machine.toolRadius; // inside cut
     // cutRect is the outline adjusted for tool radius, using offSet
     var cutRect = outline.grow(2 * offSet);
-    final spacing = machine.toolRadius * machine.millOverlap;
+    final spacing = machine.toolDiameter * machine.millOverlap;
     var points = cutRect.isLandscape
         ? Line(cutRect.bl, cutRect.tl).points(spacing: spacing)
         : Line(cutRect.bl, cutRect.br).points(spacing: spacing);

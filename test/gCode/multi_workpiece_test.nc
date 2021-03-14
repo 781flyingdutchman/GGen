@@ -2,7 +2,7 @@
 (Part 1 placement Placement.initial)
 (Part 2 placement Placement.up)
 (Part 3 placement Placement.up)
-(Time: 2021-03-07 20:39:50.485542)
+(Time: 2021-03-13 16:17:27.482236)
 
 (begin preamble)
 G17 G90
@@ -356,7 +356,7 @@ G17 G90
 (Time to this point: 0:47:00.510000)
 (end Part 3)
 
-(Total workspace extends from (-3.175, -3.175) to (532.175, 189.175))
+(Total workspace extends from [-3.175, -3.175] to [532.175, 189.175])
 (or a width of 535.350 mm and height 192.350 mm)
 
 (begin postamble)

@@ -104,12 +104,12 @@ void main() {
       var input = w.gCode[3];
       expect(GParser().parseValueOf('X', input), equals(Machine().toolRadius));
       expect(GParser().parseValueOf('Y', input), equals(Machine().toolRadius));
-      input = w.gCode[w.gCode.length - 4];
+      input = w.gCode[w.gCode.length - 3];
       expect(GParser().parseValueOf('X', input),
           equals(200 - Machine().toolRadius));
       expect(GParser().parseValueOf('Y', input),
           equals(100 - Machine().toolRadius));
-      input = w.gCode[w.gCode.length - 2];
+      input = w.gCode[w.gCode.length - 4];
       expect(GParser().parseValueOf('X', input), equals(Machine().toolRadius));
       expect(GParser().parseValueOf('Y', input),
           equals(100 - Machine().toolRadius));
@@ -122,12 +122,12 @@ void main() {
       var input = w.gCode[3];
       expect(GParser().parseValueOf('X', input), equals(Machine().toolRadius));
       expect(GParser().parseValueOf('Y', input), equals(Machine().toolRadius));
-      input = w.gCode[w.gCode.length - 4];
+      input = w.gCode[w.gCode.length - 3];
       expect(GParser().parseValueOf('X', input),
           equals(100 - Machine().toolRadius));
       expect(GParser().parseValueOf('Y', input),
           equals(200 - Machine().toolRadius));
-      input = w.gCode[w.gCode.length - 2];
+      input = w.gCode[w.gCode.length - 4];
       expect(GParser().parseValueOf('X', input),
           equals(100 - Machine().toolRadius));
       expect(GParser().parseValueOf('Y', input), equals(Machine().toolRadius));
