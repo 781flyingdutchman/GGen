@@ -173,7 +173,8 @@ class MultiWorkpiece {
       // recalculate machineToolPoint at the end of this work
       // equal to original machineToolPoint + translation + physicalToolPoint
       // as the latter is in workpiece coordinates, offset from the start
-      machineToolPoint = machineToolPoint + translate + wp.workSimulator.physicalToolPoint;
+      machineToolPoint =
+          machineToolPoint + translate + wp.workSimulator.physicalToolPoint;
     });
 
     return gCode;
@@ -224,8 +225,10 @@ class MultiWorkGenerator extends WorkGenerator {
   @override
   void postamble() {
     var box = multiWorkpiece.encompassingBox();
+    var boxExtendsString =
+        'from ${box.bl} to ${box.tr}'.replaceAll('(', '[').replaceAll(')', ']');
     gCode.addAll([
-      '(Total workspace extends from ${box.bl} to ${box.tr})',
+      '(Total workspace extends $boxExtendsString)',
       '(or a width of ${box.width.toStringAsFixed(3)} mm and height ${box.height.toStringAsFixed(3)} mm)'
     ]);
     super.postamble();
